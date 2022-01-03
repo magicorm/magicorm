@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "commonjs",
+    "lib": [ "esnext" ],
+    "declaration": true,
+    "removeComments": false,
+    "emitDeclarationOnly": true,
+    "strict": true,
+    "moduleResolution": "node",
+    "baseUrl": "./",
+    "paths": {
+      "@magicorm/*": [
+        "packages/*/src"
+      ],
+      "@magicorm/driver-*": [
+        "packages/drivers/*/src"
+      ]
+    },
+    "types": [ "node", "mocha" ],
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "exclude": [ "node_modules" ],
+  "ts-node": {
+    "require": [ "tsconfig-paths/register" ]
+  }
+}
