@@ -38,17 +38,24 @@ describe('Desc', () => {
   it('should throw already defined error.', () => {
     try {
       // @ts-ignore
-      createDesc<{foo: string}>().foo('foo').foo('foo')
-    } catch (e) {
-      // @ts-ignore
-      expect(e.message).to.be.eq('Property \'foo\' is already defined')
-    }
-    try {
-      // @ts-ignore
       createDesc<{foo: boolean}>().foo.foo
     } catch (e) {
       // @ts-ignore
       expect(e.message).to.be.eq('Property \'foo\' is already defined')
     }
+  })
+  it('should reveal default variable.', () => {
+    const desc0 = createDesc<{
+      foo: string
+      fuu: number
+    }>({
+      foo: 'foo'
+    }).fuu(100).$content
+    expect(desc0.foo).to.be.eq('foo')
+    expect(desc0.fuu).to.be.eq(100)
+    const desc1 = createDesc({
+      foo: 'foo'
+    }).foo('bar').$content
+    expect(desc1.foo).to.be.eq('bar')
   })
 })

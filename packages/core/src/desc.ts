@@ -13,7 +13,6 @@ export const createConfigure = (desc: Desc<any>, prop: string) => new Proxy(() =
     return desc[key]
   },
   apply(_, __, args) {
-    verifyKeyDefined(desc, prop)
     desc.$content[prop] = args[0]
     return desc
   }
