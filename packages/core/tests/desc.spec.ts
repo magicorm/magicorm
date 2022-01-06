@@ -58,4 +58,14 @@ describe('Desc', () => {
     }).foo('bar').$content
     expect(desc1.foo).to.be.eq('bar')
   })
+  it('should create desc by Type Constructor.', () => {
+    expect(createDesc({ foo: String }).foo('foo').$content.foo)
+      .to.be.eq('foo')
+    const desc = createDesc({
+      foo: String,
+      fuu: Number
+    }).foo('foo').fuu(100).$content
+    expect(desc.foo).to.be.eq('foo')
+    expect(desc.fuu).to.be.eq(100)
+  })
 })
