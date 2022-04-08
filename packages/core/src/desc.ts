@@ -49,9 +49,10 @@ export namespace Desc {
   type CreateDesc<Options, ROptions, K extends keyof ROptions, V> = Desc<
     Omit<Options, K> & { [P in K]: V }, Omit<ROptions, K>
   >
-  export type Configure<Options, ROptions, K extends keyof ROptions, Prop = ROptions[K]> = Prop extends boolean
-    ? CreateDesc<Options, ROptions, K, true>
-    : <V extends Prop>(v: V) => CreateDesc<Options, ROptions, K, V>
+  export type Configure<Options, ROptions, K extends keyof ROptions, Prop = ROptions[K]> =
+    [Prop] extends [boolean]
+      ? CreateDesc<Options, ROptions, K, true>
+      : <T extends Prop>(v: T) => CreateDesc<Options, ROptions, K, T>
   export type Configures<Options, ROptions> = {
     [K in keyof ROptions]: ROptions[K] extends abstract new (...args: any) => infer R
       ? Configure<Options, ROptions, K, R>
