@@ -11,15 +11,21 @@ export const createModel = <S extends Model.Schema>(schema: S) => {
 }
 
 export const defineProp = <S extends `${Model.PropDescType}(${number})` | Model.PropDescType>(s: S) => {
-  const [_, t, __, size] = /^(.+?)(\((\d+)\))?$/.exec(s) ?? [s, undefined]
-  if (!t) throw new Error(`Invalid prop type: ${s}`)
+  const [_, t, __, size] = /^(.+?)(\((.+)\))?$/.exec(s) ?? [s, undefined]
+  if (!t) throw new Error(`Invalid prop type: "${s}"`)
 
   const desc = createDesc<{
     type: string
     size: number
   }>().type(t)
-  if (size && Model.ableConfigSize.includes(t) && !isNaN(Number(size))) {
-    desc.size(+size)
+  if (size) {
+    if (!Model.ableConfigSize.includes(t)) {
+      console.warn(`Prop "${s}" has size but type "${t}" is not able to config size.`)
+    } else {
+      if (isNaN(Number(size)))
+        throw new Error(`Invalid prop size: "${s}"`)
+      desc.size(+size)
+    }
   }
 
   return desc as Model.PropDesc<
