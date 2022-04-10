@@ -10,8 +10,8 @@ export const createModel = <S extends Model.Schema>(schema: S) => {
   return new Model<S>(schema)
 }
 
-export const defineProp = <S extends Model.PropDescType | `${Model.PropDescType}(${number})`>(s: S) => {
-  const [t, size] = /^(.+)\((.+)\)$/.exec(s) ?? [s, undefined]
+export const defineProp = <S extends `${Model.PropDescType}(${number})` | Model.PropDescType>(s: S) => {
+  const [_, t, __, size] = /^(.+?)(\((\d+)\))?$/.exec(s) ?? [s, undefined]
   if (!t) throw new Error(`Invalid prop type: ${s}`)
 
   const desc = createDesc<{
