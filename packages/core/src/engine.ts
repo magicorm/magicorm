@@ -1,4 +1,5 @@
 import { Connector } from './connector'
+import { Model } from './model'
 
 export interface DriverOptionsMap {
   [p: string]: any
@@ -20,6 +21,34 @@ export abstract class AbsDriver<Name extends Engine.Drivers> {
     this.name = name
     this.options = options
   }
+  /**
+   * Drop table by model
+   */
+  abstract drop: (m: Model) => Promise<void>
+  /**
+   * Create table by model
+   */
+  abstract create: (m: Model) => Promise<void>
+  /**
+   * Search results by query
+   */
+  abstract search: () => Promise<void>
+  /**
+   * Insert data to model
+   */
+  abstract insert: (m: Model) => Promise<void>
+  /**
+   * Update data for model
+   */
+  abstract update: (m: Model) => Promise<void>
+  /**
+   * Update or Insert data to model
+   */
+  abstract upsert: (m: Model) => Promise<void>
+  /**
+   * Delete data for model
+   */
+  abstract delete: (m: Model) => Promise<void>
 }
 
 export function createDriver<Name extends Engine.Drivers>(
