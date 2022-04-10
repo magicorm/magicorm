@@ -10,7 +10,7 @@ export const createModel = <S extends Model.Schema>(schema: S) => {
   return new Model<S>(schema)
 }
 
-export const defineProp = <S extends string>(s: S) => {
+export const defineProp = <S extends Model.PropDescType | `${Model.PropDescType}(${number})`>(s: S) => {
   const [t, size] = /^(.+)\((.+)\)$/.exec(s) ?? [s, undefined]
   if (!t) throw new Error(`Invalid prop type: ${s}`)
 
@@ -116,7 +116,7 @@ export namespace Model {
   }
 
   export type PropTypeWithSize<T extends string> =
-    T extends `${PropDescType}(${ infer Size })`
-      ? { type: T; size: Size }
+    T extends `${infer Type}(${ infer Size })`
+      ? { type: Type; size: Size }
       : { type: T }
 }
