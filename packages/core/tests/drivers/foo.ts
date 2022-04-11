@@ -13,32 +13,32 @@ interface Options {
 const dbs = new Map<string, Record<string, any[]>>()
 
 class Connector extends AbsConnector<'foo'> {
-  db = dbs.get(this.options.dbName)
+  public db: Record<string, any[]>
   constructor(options: Options) {
     super(options)
-    if (this.db === undefined) {
+    const db = dbs.get(this.options.dbName)
+    if (db === undefined) {
       dbs.set(this.options.dbName, this.db = {})
+    } else {
+      this.db = db
     }
   }
 }
 
-class FooDriver extends AbsDriver<'foo'> implements Driver<'foo'> {
+class FooDriver extends AbsDriver<'foo'> implements Driver<'foo', Connector> {
   constructor(options?: Options) {
     super('foo', options)
   }
-
   connect(options?: DriverOptionsMap['foo']) {
     return new Connector(Object.assign({
       dbName: 'default'
     }, options))
   }
-
-  drop(m: Model) {
-    return Promise.resolve(undefined)
+  remove(m: Model, conn: Connector) {
+    delete conn.db[m.name]
   }
-
-  create(m: Model) {
-    return Promise.resolve(undefined)
+  create(m: Model, conn: Connector) {
+    conn.db[m.name] = []
   }
 }
 

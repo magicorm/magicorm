@@ -9,18 +9,21 @@ export interface DriverConstructor<Name extends Engine.Drivers> {
   new(options?: DriverOptionsMap[Name]): Driver<Name>
 }
 
-export interface Driver<Name extends Engine.Drivers> {
+export interface Driver<
+  Name extends Engine.Drivers,
+  Connector extends AbsConnector<Name> = AbsConnector<Name>
+  > {
   name: Name
   options?: DriverOptionsMap[Name]
-  connect(options?: DriverOptionsMap[Name]): Awaited<AbsConnector<Name>>
+  connect(options?: DriverOptionsMap[Name]): Awaited<Connector>
   /**
-   * Drop table by model
+   * Remove table from db
    */
-  drop: (m: Model) => Awaited<void>
+  remove: (m: Model, conn: Connector) => Awaited<void>
   /**
-   * Create table by model
+   * Create table from db
    */
-  create: (m: Model) => Awaited<void>
+  create: (m: Model, conn: Connector) => Awaited<void>
   /**
    * Search results by query
    */
