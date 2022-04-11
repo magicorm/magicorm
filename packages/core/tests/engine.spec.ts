@@ -33,8 +33,8 @@ describe('Driver', () => {
       MockRequire.stop('@magicorm/driver-foo')
     })
     it('should create target driver by driver name.', () => {
-      const d = createDriver('foo', { none: 'test' })
-      expect(d.options?.none).to.equal('test')
+      const d = createDriver('foo', { dbName: 'test' })
+      expect(d.options?.dbName).to.equal('test')
     })
   })
 })
@@ -50,9 +50,9 @@ describe('Engine', () => {
   it('should create Engine.', () => {
     const engine = createEngine({
       driver: 'foo',
-      driverOptions: { none: 'none' }
+      driverOptions: { dbName: 'none' }
     })
 
-    expect(engine.driver.options?.none).to.equal('none')
+    expect(engine.driver.options?.dbName).to.equal('none')
   })
 })
