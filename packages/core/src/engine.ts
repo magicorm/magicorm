@@ -15,7 +15,7 @@ export interface Driver<
   > {
   name: Name
   options?: DriverOptionsMap[Name]
-  connect(options?: DriverOptionsMap[Name]): Awaited<Connector>
+  connect(): Awaited<Connector>
   /**
    * Remove table from db
    */
@@ -90,8 +90,12 @@ export class Engine<DriverName extends Engine.Drivers> {
   driver: Driver<DriverName>
   models: Model<this>[] = []
 
+  isM2ddl = false
+
   constructor(public options: Engine.Options<DriverName>) {
-    this.options = Object.assign({}, options)
+    this.options = Object.assign({
+      m2ddl: 'create'
+    }, options)
     this.driver = createDriver(this.options.driver, this.options.driverOptions)
     engines.push(this)
     modelsCache.forEach(m => this.registerModel(m as Model<this>))
@@ -103,7 +107,16 @@ export class Engine<DriverName extends Engine.Drivers> {
   }
 
   async connect() {
-    await this.driver.connect(this.options)
+    const conn = await this.driver.connect()
+    if (!this.isM2ddl) {
+      const m2ddl = this.options.m2ddl
+      if (m2ddl?.startsWith('drop')) {
+        this.models.forEach(m => this.driver.remove(m, conn))
+      }
+      if (m2ddl?.endsWith('create')) {
+        this.models.forEach(m => this.driver.create(m, conn))
+      }
+    }
   }
 }
 

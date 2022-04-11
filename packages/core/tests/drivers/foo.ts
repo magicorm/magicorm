@@ -1,4 +1,4 @@
-import { AbsConnector, AbsDriver, Driver, DriverOptionsMap, Model } from '@magicorm/core'
+import { AbsConnector, AbsDriver, Driver, Model } from '@magicorm/core'
 
 declare module '@magicorm/core' {
   interface DriverOptionsMap {
@@ -26,13 +26,15 @@ class Connector extends AbsConnector<'foo'> {
 }
 
 class FooDriver extends AbsDriver<'foo'> implements Driver<'foo', Connector> {
+  static dbs = dbs
+
   constructor(options?: Options) {
     super('foo', options)
   }
-  connect(options?: DriverOptionsMap['foo']) {
+  connect() {
     return new Connector(Object.assign({
       dbName: 'default'
-    }, options))
+    }, this.options))
   }
   remove(m: Model, conn: Connector) {
     delete conn.db[m.name]

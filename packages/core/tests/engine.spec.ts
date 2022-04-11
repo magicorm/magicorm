@@ -1,7 +1,7 @@
 import MockRequire from 'mock-require'
 import { createDriver, createEngine, Driver } from '@magicorm/core'
 import { expect } from 'chai'
-import './drivers/foo'
+import FooDriver from './drivers/foo'
 
 describe('Driver', () => {
   it('should resolve right path.', () => {
@@ -27,7 +27,7 @@ describe('Driver', () => {
   })
   describe('Foo', () => {
     before(() => {
-      MockRequire('@magicorm/driver-foo', require('./drivers/foo'))
+      MockRequire('@magicorm/driver-foo', FooDriver)
     })
     after(() => {
       MockRequire.stop('@magicorm/driver-foo')
@@ -41,7 +41,7 @@ describe('Driver', () => {
 
 describe('Engine', () => {
   before(() => {
-    MockRequire('@magicorm/driver-foo', require('./drivers/foo'))
+    MockRequire('@magicorm/driver-foo', FooDriver)
   })
   after(() => {
     MockRequire.stop('@magicorm/driver-foo')
@@ -52,7 +52,18 @@ describe('Engine', () => {
       driver: 'foo',
       driverOptions: { dbName: 'none' }
     })
-
-    expect(engine.driver.options?.dbName).to.equal('none')
+    expect(engine.driver.options?.dbName)
+      .to.be.equal('none')
+    expect(engine.options.m2ddl)
+      .to.be.equal('create')
+  })
+  it('should create Engine and connect.', async () => {
+    const engine = createEngine({
+      driver: 'foo',
+      driverOptions: { dbName: 'bar' }
+    })
+    await engine.connect()
+    expect(FooDriver.dbs.get('bar'))
+      .to.be.deep.equal({})
   })
 })
