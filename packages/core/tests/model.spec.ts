@@ -3,11 +3,13 @@ import { expect } from 'chai'
 
 describe('Model', function () {
   it('should create model with prop.', () => {
-    const UModel = createModel({
+    const UModel = createModel('User', {
       id: dp('int'),
       nickname: dp('varchar(72)'),
       username: dp('varchar(72)').unique
     })
+    expect(UModel.name)
+      .to.be.equal('User')
     expect(UModel.schema.id.$content.type)
       .to.be.equal('int')
     expect(UModel.schema.id.$content.size)

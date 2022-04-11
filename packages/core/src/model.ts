@@ -2,7 +2,12 @@ import { createDesc, Desc } from './desc'
 import { Engine, engines } from './engine'
 
 export class Model<E extends Engine<any> = Engine<any>, S = Model.Schema> {
-  constructor(public schema: S, public engine?: E) {
+  constructor(
+    public name: string,
+    public schema: S,
+    public engine?: E
+  ) {
+    this.name = name
     this.schema = schema
     this.engine = engine
   }
@@ -10,9 +15,9 @@ export class Model<E extends Engine<any> = Engine<any>, S = Model.Schema> {
 
 export const modelsCache: Model[] = []
 
-export const createModel = <S extends Model.Schema>(schema: S, engine?: Engine<any>) => {
+export const createModel = <S extends Model.Schema>(name: string, schema: S, engine?: Engine<any>) => {
   engine = engine || engines[0]
-  const model = new Model(schema, engine)
+  const model = new Model(name, schema, engine)
   if (engine) {
     engine.registerModel(model)
   } else {
