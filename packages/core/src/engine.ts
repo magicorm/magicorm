@@ -1,5 +1,5 @@
-import { Connector } from './connector'
-import { Model } from './model'
+import { AbsConnector } from './connector'
+import { Model, modelsCache } from './model'
 
 export interface DriverOptionsMap {
   [p: string]: any
@@ -80,13 +80,23 @@ export namespace Driver {
   }
 }
 
+export const engines = [] as Engine<any>[]
+
 export class Engine<DriverName extends Engine.Drivers> {
   driver: Driver<DriverName>
-  connector: Connector | null = null
+  connector: AbsConnector | null = null
+  models: Model[] = []
 
   constructor(public options: Engine.Options<DriverName>) {
     this.options = Object.assign({}, options)
     this.driver = createDriver(this.options.driver, this.options.driverOptions)
+    engines.push(this)
+    modelsCache.forEach(m => this.register(m))
+    modelsCache.splice(0, modelsCache.length)
+  }
+
+  register(model: Model) {
+    this.models.push(model)
   }
 
   connect() {

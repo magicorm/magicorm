@@ -1,4 +1,5 @@
 import { createDesc, Desc } from './desc'
+import { Engine, engines } from './engine'
 
 export class Model<S = Model.Schema> {
   constructor(public schema: S) {
@@ -6,12 +7,21 @@ export class Model<S = Model.Schema> {
   }
 }
 
-export const createModel = <S extends Model.Schema>(schema: S) => {
-  return new Model<S>(schema)
+export const modelsCache: Model[] = []
+
+export const createModel = <S extends Model.Schema>(schema: S, engine?: Engine<any>) => {
+  const model = new Model(schema)
+  engine = engine || engines[0]
+  if (engine) {
+    engine.register(model)
+  } else {
+    modelsCache.push(model)
+  }
+  return model
 }
 
 export const defineProp = <S extends `${Model.PropDescType}(${number})` | Model.PropDescType>(s: S) => {
-  const [_, t, __, size] = /^(.+?)(\((.+)\))?$/.exec(s) ?? [s, undefined]
+  const [, t, , size] = /^(.+?)(\((.+)\))?$/.exec(s) ?? [s, undefined]
   if (!t) throw new Error(`Invalid prop type: "${s}"`)
 
   const desc = createDesc<{
