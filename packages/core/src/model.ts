@@ -1,19 +1,20 @@
 import { createDesc, Desc } from './desc'
 import { Engine, engines } from './engine'
 
-export class Model<S = Model.Schema> {
-  constructor(public schema: S) {
+export class Model<E extends Engine<any> = Engine<any>, S = Model.Schema> {
+  constructor(public schema: S, public engine?: E) {
     this.schema = schema
+    this.engine = engine
   }
 }
 
 export const modelsCache: Model[] = []
 
 export const createModel = <S extends Model.Schema>(schema: S, engine?: Engine<any>) => {
-  const model = new Model(schema)
   engine = engine || engines[0]
+  const model = new Model(schema, engine)
   if (engine) {
-    engine.register(model)
+    engine.registerModel(model)
   } else {
     modelsCache.push(model)
   }

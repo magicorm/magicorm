@@ -12,6 +12,35 @@ export interface DriverConstructor<Name extends Engine.Drivers> {
 export interface Driver<Name extends Engine.Drivers> {
   name: Name
   options?: DriverOptionsMap[Name]
+  connect(options?: DriverOptionsMap[Name]): Promise<AbsConnector<Name>>
+  /**
+   * Drop table by model
+   */
+  drop: (m: Model) => Promise<void>
+  /**
+   * Create table by model
+   */
+  create: (m: Model) => Promise<void>
+  /**
+   * Search results by query
+   */
+  search: () => Promise<void>
+  /**
+   * Insert data to model
+   */
+  insert: (m: Model) => Promise<void>
+  /**
+   * Update data for model
+   */
+  update: (m: Model) => Promise<void>
+  /**
+   * Update or Insert data to model
+   */
+  upsert: (m: Model) => Promise<void>
+  /**
+   * Delete data for model
+   */
+  delete: (m: Model) => Promise<void>
 }
 
 export abstract class AbsDriver<Name extends Engine.Drivers> {
@@ -21,34 +50,6 @@ export abstract class AbsDriver<Name extends Engine.Drivers> {
     this.name = name
     this.options = options
   }
-  /**
-   * Drop table by model
-   */
-  abstract drop: (m: Model) => Promise<void>
-  /**
-   * Create table by model
-   */
-  abstract create: (m: Model) => Promise<void>
-  /**
-   * Search results by query
-   */
-  abstract search: () => Promise<void>
-  /**
-   * Insert data to model
-   */
-  abstract insert: (m: Model) => Promise<void>
-  /**
-   * Update data for model
-   */
-  abstract update: (m: Model) => Promise<void>
-  /**
-   * Update or Insert data to model
-   */
-  abstract upsert: (m: Model) => Promise<void>
-  /**
-   * Delete data for model
-   */
-  abstract delete: (m: Model) => Promise<void>
 }
 
 export function createDriver<Name extends Engine.Drivers>(
@@ -84,22 +85,22 @@ export const engines = [] as Engine<any>[]
 
 export class Engine<DriverName extends Engine.Drivers> {
   driver: Driver<DriverName>
-  connector: AbsConnector | null = null
-  models: Model[] = []
+  models: Model<this>[] = []
 
   constructor(public options: Engine.Options<DriverName>) {
     this.options = Object.assign({}, options)
     this.driver = createDriver(this.options.driver, this.options.driverOptions)
     engines.push(this)
-    modelsCache.forEach(m => this.register(m))
+    modelsCache.forEach(m => this.registerModel(m as Model<this>))
     modelsCache.splice(0, modelsCache.length)
   }
 
-  register(model: Model) {
+  registerModel(model: Model<this>) {
     this.models.push(model)
   }
 
-  connect() {
+  async connect() {
+    await this.driver.connect(this.options)
   }
 }
 
@@ -112,5 +113,22 @@ export namespace Engine {
   export interface Options<DriverName extends Drivers> {
     driver: DriverName
     driverOptions?: DriverOptionsMap[DriverName]
+    /**
+     * Generate DDL for model
+     *
+     * * `none` - no DDL
+     * * `drop` - drop table
+     * * `drop-create` - drop table and create
+     * * `create` - create table
+     * * `update` - update table when model changed
+     * * `validate` - validate table by model
+     */
+    m2ddl?:
+      | 'none'
+      | 'drop'
+      | 'drop-create'
+      | 'create'
+      // | 'update'
+      // | 'validate'
   }
 }
