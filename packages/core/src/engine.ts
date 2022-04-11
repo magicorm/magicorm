@@ -12,35 +12,35 @@ export interface DriverConstructor<Name extends Engine.Drivers> {
 export interface Driver<Name extends Engine.Drivers> {
   name: Name
   options?: DriverOptionsMap[Name]
-  connect(options?: DriverOptionsMap[Name]): Promise<AbsConnector<Name>>
+  connect(options?: DriverOptionsMap[Name]): Awaited<AbsConnector<Name>>
   /**
    * Drop table by model
    */
-  drop: (m: Model) => Promise<void>
+  drop: (m: Model) => Awaited<void>
   /**
    * Create table by model
    */
-  create: (m: Model) => Promise<void>
+  create: (m: Model) => Awaited<void>
   /**
    * Search results by query
    */
-  search: () => Promise<void>
+  // search: () => Awaited<void>
   /**
    * Insert data to model
    */
-  insert: (m: Model) => Promise<void>
+  // insert: (m: Model) => Awaited<void>
   /**
    * Update data for model
    */
-  update: (m: Model) => Promise<void>
+  // update: (m: Model) => Awaited<void>
   /**
    * Update or Insert data to model
    */
-  upsert: (m: Model) => Promise<void>
+  // upsert: (m: Model) => Awaited<void>
   /**
    * Delete data for model
    */
-  delete: (m: Model) => Promise<void>
+  // delete: (m: Model) => Awaited<void>
 }
 
 export abstract class AbsDriver<Name extends Engine.Drivers> {
