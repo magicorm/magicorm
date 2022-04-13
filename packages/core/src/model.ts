@@ -130,6 +130,7 @@ export namespace Model {
     type: T
     size: number
     unique: boolean
+    primary: boolean
     default: PropDescTypeMap[T]
     comment: string
     notnull: boolean
