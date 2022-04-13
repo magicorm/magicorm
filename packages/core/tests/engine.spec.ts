@@ -1,5 +1,5 @@
 import MockRequire from 'mock-require'
-import { createDriver, createEngine, Driver } from '@magicorm/core'
+import { createDriver, createEngine, createModel, dp, Driver, engines, modelsCache } from '@magicorm/core'
 import { expect } from 'chai'
 import FooDriver from './drivers/foo'
 
@@ -56,14 +56,22 @@ describe('Engine', () => {
       .to.be.equal('none')
     expect(engine.options.m2ddl)
       .to.be.equal('create')
+    expect(engines[0])
+      .to.be.equal(engine)
   })
-  it('should create Engine and connect.', async () => {
+  it('should create call `Driver` create method when engine connect.', async () => {
+    createModel('user', {
+      id: dp('number').primary.unique.autoinc,
+      username: dp('string').unique
+    })
     const engine = createEngine({
       driver: 'foo',
       driverOptions: { dbName: 'bar' }
     })
     await engine.connect()
+    expect(modelsCache.length)
+      .to.be.equal(0)
     expect(FooDriver.dbs.get('bar'))
-      .to.be.deep.equal({})
+      .to.be.deep.equal({ user: [] })
   })
 })
