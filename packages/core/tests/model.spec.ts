@@ -1,4 +1,4 @@
-import { createModel, dp } from '@magicorm/core'
+import { createModel, dp, modelsCache } from '@magicorm/core'
 import { expect } from 'chai'
 
 describe('Model', function () {
@@ -24,6 +24,8 @@ describe('Model', function () {
       .to.be.equal(72)
     expect(UModel.schema.username.$content.unique)
       .to.be.equal(true)
+    expect(modelsCache[0])
+      .to.be.equal(UModel)
   })
   it('should throw error when define prop.', () => {
     expect(dp.bind(null, ''))
