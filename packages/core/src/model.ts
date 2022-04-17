@@ -1,23 +1,46 @@
 import { createDesc, Desc } from './desc'
 import { Engine, engines } from './engine'
 
-export class Model<E extends Engine<any> = Engine<any>, S = Model.Schema> {
+export class Model<E extends Engine<any> = Engine<any>, S extends Model.Schema = Model.Schema>
+  extends Function {
   constructor(
     public name: string,
     public schema: S,
     public engine?: E
   ) {
+    super()
     this.name = name
     this.schema = schema
     this.engine = engine
   }
 }
 
-export const modelsCache: Model[] = []
+export class Entity<M extends Model> {
+  #model: M
+  constructor(model: M, data: Model.InferSchemaData<M['schema']>) {
+    this.#model = model
+    Object.assign(this, data)
+  }
+}
 
-export const createModel = <S extends Model.Schema>(name: string, schema: S, engine?: Engine<any>) => {
+export interface EntityConstructor<M extends Model, D = Model.InferSchemaData<M['schema']>>
+  extends Model<Exclude<M['engine'], undefined>, M['schema']> {
+  new(data: D): Entity<M> & D
+}
+
+export const modelsCache: EntityConstructor<Model<any, any>>[] = []
+
+export const createModel = <
+  E extends Engine<any> = Engine<any>,
+  S extends Model.Schema = Model.Schema,
+  >(name: string, schema: S, engine?: Engine<any>): EntityConstructor<Model<E, S>> => {
   engine = engine || engines[0]
-  const model = new Model(name, schema, engine)
+  const model = new Proxy(new Model(name, schema, engine) as EntityConstructor<Model<E, S>>, {
+    construct(target, args) {
+      // @ts-ignore
+      return new Entity(target, ...args)
+    }
+  })
   if (engine) {
     engine.registerModel(model)
   } else {
@@ -55,6 +78,9 @@ export const dp = defineProp
 
 export namespace Model {
   export type Schema = Record<string, Pick<PropDesc<Prop>, '$content'>>
+  export type InferSchemaData<S extends Schema> = {
+    [K in keyof S]: S[K]['$content']['default']
+  };
 
   export namespace Types {
     export type Number =

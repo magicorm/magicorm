@@ -26,6 +26,17 @@ describe('Model', function () {
       .to.be.equal(true)
     expect(modelsCache[0])
       .to.be.equal(UModel)
+    const u0 = new UModel({
+      id: 1,
+      nickname: 'test',
+      username: 'test'
+    })
+    expect(u0.id)
+      .to.be.equal(1)
+    expect(u0.nickname)
+      .to.be.equal('test')
+    expect(u0.username)
+      .to.be.equal('test')
   })
   it('should throw error when define prop.', () => {
     expect(dp.bind(null, ''))
