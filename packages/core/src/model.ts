@@ -15,16 +15,21 @@ export class Model<E extends Engine<any> = Engine<any>, S extends Model.Schema =
   }
 }
 
+export const EntityModelSymbol = Symbol('EntityModel')
+
+export const OriginModelSymbol = Symbol('OriginModel')
+
 export class Entity<M extends Model> {
-  #model: M
+  [EntityModelSymbol]: M
   constructor(model: M, data: Model.InferSchemaData<M['schema']>) {
-    this.#model = model
+    this[EntityModelSymbol] = model
     Object.assign(this, data)
   }
 }
 
 export interface EntityConstructor<M extends Model, D = Model.InferSchemaData<M['schema']>>
   extends Model<Exclude<M['engine'], undefined>, M['schema']> {
+  [OriginModelSymbol]: M
   new(data: D): Entity<M> & D
 }
 
@@ -36,6 +41,12 @@ export const createModel = <
   >(name: string, schema: S, engine?: Engine<any>): EntityConstructor<Model<E, S>> => {
   engine = engine || engines[0]
   const model = new Proxy(new Model(name, schema, engine) as EntityConstructor<Model<E, S>>, {
+    get(target, p) {
+      if (p === OriginModelSymbol)
+        return target
+      // @ts-ignore
+      return target[p]
+    },
     construct(target, args) {
       // @ts-ignore
       return new Entity(target, ...args)

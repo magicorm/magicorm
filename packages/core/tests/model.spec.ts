@@ -1,4 +1,4 @@
-import { createModel, dp, modelsCache } from '@magicorm/core'
+import { createModel, dp, EntityModelSymbol, modelsCache, OriginModelSymbol } from '@magicorm/core'
 import { expect } from 'chai'
 
 describe('Model', function () {
@@ -37,6 +37,22 @@ describe('Model', function () {
       .to.be.equal('test')
     expect(u0.username)
       .to.be.equal('test')
+  })
+  it('should create entity from model.', () => {
+    const UModel = createModel('User', {
+      id: dp('int'),
+      nickname: dp('varchar(72)'),
+      username: dp('varchar(72)').unique
+    })
+    const u0 = new UModel({
+      id: 1,
+      nickname: 'test',
+      username: 'test'
+    })
+    expect(u0.id)
+      .to.be.equal(1)
+    expect(u0[EntityModelSymbol])
+      .to.be.equal(UModel[OriginModelSymbol])
   })
   it('should throw error when define prop.', () => {
     expect(dp.bind(null, ''))
