@@ -1,4 +1,4 @@
-import { AbsConnector, AbsDriver, Driver, Model } from '@magicorm/core'
+import { AbsConnector, AbsDriver, Driver, Entity, EntityModelSymbol, Model } from '@magicorm/core'
 
 declare module '@magicorm/core' {
   interface DriverOptionsMap {
@@ -41,6 +41,13 @@ class FooDriver extends AbsDriver<'foo'> implements Driver<'foo', Connector> {
   }
   create(m: Model, conn: Connector) {
     conn.db[m.name] = []
+  }
+  insert(entities: Entity<Model>[], conn: Connector) {
+    if (entities.length > 0) {
+      const m = entities[0][EntityModelSymbol]
+      conn.db[m.name].push(...entities)
+    }
+    return entities
   }
 }
 

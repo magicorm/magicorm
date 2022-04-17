@@ -60,7 +60,7 @@ describe('Engine', () => {
       .to.be.equal(engine)
   })
   it('should create call `Driver` create method when engine connect.', async () => {
-    createModel('user', {
+   const User = createModel('user', {
       id: dp('number').primary.unique.autoinc,
       username: dp('string').unique
     })
@@ -73,5 +73,7 @@ describe('Engine', () => {
       .to.be.equal(0)
     expect(FooDriver.dbs.get('bar'))
       .to.be.deep.equal({ user: [] })
+    expect(User.engine)
+      .to.be.equal(engine)
   })
 })

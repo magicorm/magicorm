@@ -1,5 +1,5 @@
 import { AbsConnector } from './connector'
-import { Model, modelsCache } from './model'
+import { Entity, Model, modelsCache } from './model'
 
 export interface DriverOptionsMap {
   [p: string]: any
@@ -7,6 +7,10 @@ export interface DriverOptionsMap {
 
 export interface DriverConstructor<Name extends Engine.Drivers> {
   new(options?: DriverOptionsMap[Name]): Driver<Name>
+}
+
+export interface DriverOperatOptions {
+  transaction?: any
 }
 
 export interface Driver<
@@ -19,19 +23,23 @@ export interface Driver<
   /**
    * Remove table from db
    */
-  remove: (m: Model, conn: Connector) => Awaited<void>
+  remove: (m: Model, conn: Connector, opts?: DriverOperatOptions) => Awaited<void>
   /**
    * Create table from db
    */
-  create: (m: Model, conn: Connector) => Awaited<void>
+  create: (m: Model, conn: Connector, opts?: DriverOperatOptions) => Awaited<void>
+  /**
+   * Insert data to model
+   */
+  insert: (entities: Entity<Model>[], conn: Connector, opts?: DriverOperatOptions) => Awaited<Entity<Model>[]>
+  /**
+   * Delete data for model
+   */
+  // delete: (m: Model) => Awaited<void>
   /**
    * Search results by query
    */
   // search: () => Awaited<void>
-  /**
-   * Insert data to model
-   */
-  // insert: (m: Model) => Awaited<void>
   /**
    * Update data for model
    */
@@ -40,10 +48,6 @@ export interface Driver<
    * Update or Insert data to model
    */
   // upsert: (m: Model) => Awaited<void>
-  /**
-   * Delete data for model
-   */
-  // delete: (m: Model) => Awaited<void>
 }
 
 export abstract class AbsDriver<Name extends Engine.Drivers> {
