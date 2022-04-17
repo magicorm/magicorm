@@ -18,12 +18,12 @@ export const createConfigure = (desc: Desc<any>, prop: string) => new Proxy(() =
   }
 })
 
-export const createDesc = <Options extends Record<string, any>>(options?: Partial<Options>) => {
+export const createDesc = <Options extends Record<string | symbol, any>>(options?: Partial<Options>) => {
   const desc: Desc<Options> = new Proxy(<Desc<Options>>{
     $content: Desc.resolveContent(Object.assign({}, options))
   }, {
-    get(target, p: string) {
-      if (p.startsWith('$'))
+    get(target, p: string | symbol) {
+      if (typeof p === 'symbol' || p.startsWith('$'))
         return target[p]
 
       return createConfigure(desc, p)
