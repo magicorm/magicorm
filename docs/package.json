@@ -1,0 +1,13 @@
+{
+  "name": "docs",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "vuepress dev",
+    "build": "vuepress build"
+  },
+  "dependencies": {
+    "@vue/component-compiler-utils": "^3.3.0",
+    "@vuepress/plugin-register-components": "^2.0.0-beta.38",
+    "vuepress-vite": "^2.0.0-beta.39"
+  }
+}

@@ -6,6 +6,7 @@
   "author": "yijie",
   "license": "MIT",
   "workspaces": [
+    "docs",
     "packages/*",
     "packages/drivers/*"
   ],
