@@ -1,3 +1,6 @@
 export * from './connector'
+export * from './desc'
 export * from './engine'
 export * from './model'
+export * from './query'
+export * from './selector'
