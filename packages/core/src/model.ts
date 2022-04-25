@@ -92,6 +92,7 @@ export namespace Model {
   export type InferSchemaData<S extends Schema> = {
     [K in keyof S]: S[K]['$content']['default']
   };
+  export type GetPropType<P extends Pick<PropDesc<Prop>, '$content'>> = Exclude<P['$content']['type'], undefined>
 
   export namespace Types {
     export type Number =
