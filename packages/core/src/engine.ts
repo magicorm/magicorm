@@ -9,10 +9,6 @@ export interface DriverConstructor<Name extends Engine.Drivers> {
   new(options?: DriverOptionsMap[Name]): Driver<Name>
 }
 
-export interface DriverOperatOptions {
-  transaction?: any
-}
-
 export interface Driver<
   Name extends Engine.Drivers,
   Connector extends AbsConnector<Name> = AbsConnector<Name>
@@ -23,15 +19,15 @@ export interface Driver<
   /**
    * Remove table from db
    */
-  remove: (m: Model, conn: Connector, opts?: DriverOperatOptions) => Awaited<void>
+  remove: (m: Model, conn: Connector, opts?: Driver.OperatOptions) => Awaited<void>
   /**
    * Create table from db
    */
-  create: (m: Model, conn: Connector, opts?: DriverOperatOptions) => Awaited<void>
+  create: (m: Model, conn: Connector, opts?: Driver.OperatOptions) => Awaited<void>
   /**
    * Insert data to model
    */
-  insert: (entities: Entity<Model>[], conn: Connector, opts?: DriverOperatOptions) => Awaited<Entity<Model>[]>
+  insert: (entities: Entity<Model>[], conn: Connector, opts?: Driver.OperatOptions) => Awaited<Entity<Model>[]>
   /**
    * Delete data for model
    */
@@ -85,6 +81,9 @@ export namespace Driver {
     } else {
       throw new Error('Driver name must be a string')
     }
+  }
+  export interface OperatOptions {
+    transaction?: any
   }
 }
 
