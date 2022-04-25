@@ -29,20 +29,33 @@ const engine = createEngine({
 
 await engine.connect()
 
-const u1 = new User({
-  nickname: 'test001',
-  username: 'test001'
-})
-
-const users0 = engine.exec('search')
+const u0 = engine.exec('search', User)
+  .where({
+    [User.nickname]: { $eq: 'test001' },
+    [User.username]: { $eq: 'test001' }
+  })
+const u1 = engine.exec('search', User)
   .where([User.nickname.eq('test001'), User.username.eq('test001')])
 // user.nickname = 'test001' && user.username = 'test001'
 
-const users1 = engine.exec('search')
+const u2 = engine.exec('search', User)
+  .where({
+    [User.nickname]: { $eq: 'test001' }
+  }, {
+    [User.username]: { $eq: 'test001' }
+  })
+const u3 = engine.exec('search', User)
   .where(User.nickname.eq('test001'), User.username.eq('test001'))
 // user.nickname = 'test001' || user.username = 'test001'
 
-const users2 = engine.exec('search')
+const u4 = engine.exec('search', User)
+  .where({
+    [User.nickname]: { $eq: 'test001' }
+  }, {
+    [User.nickname]: { $eq: 'test002' },
+    [User.username]: { $eq: 'test002' }
+  })
+const u5 = engine.exec('search', User)
   .where(
     User.nickname.eq('test001'), [
       User.username.eq('test002'), User.nickname.eq('test002')
