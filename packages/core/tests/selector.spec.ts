@@ -12,11 +12,15 @@ describe('Selector', function () {
       foo: {
         $eq: 'bar'
       }
-    })
+    }).limit(10).offset(10)
     expect(selector.queries[0]).to.deep.equal({
       foo: {
         $eq: 'bar'
       }
+    })
+    expect(selector.options).to.deep.equal({
+      limit: 10,
+      offset: 10
     })
   })
 })
