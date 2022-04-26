@@ -60,27 +60,32 @@ export class Selector<
 }
 
 export namespace Selector {
-  export const resolve = <Queries extends readonly Query<Model.Schema>[]>(queries: Queries) => {
-    if (queries.length === 0) {
-      return {}
+  export function resolveQueryProp(v: any) {
+    switch (typeof v) {
+      case 'object':
+        return v
+      case 'undefined':
+        return undefined
+      default:
+        return { $eq: v }
     }
-    if (queries.length === 1) {
-      return queries[0]
-    }
-    return {
-      $or: Object.entries(queries).reduce((acc, [k, v]) => {
-        if (v) {
-          switch (typeof v) {
-            case 'object':
-              acc[k] = v
-              break
-            default:
-              acc[k] = { $eq: v }
-              break
-          }
+  }
+  export function resolveQuery<S extends Model.Schema, Queries extends readonly Query<S>[]>(s: S, queries: Queries): Query<S> {
+    type RType = Query<S>
+    switch (queries.length) {
+      case 0:
+        return <RType>{}
+      case 1:
+        return <RType>Object.entries(queries[0]).reduce((acc: Query<S>, [k, v]) => {
+          acc[k as keyof Query<S>] = resolveQueryProp(v)
+          return acc
+        }, {})
+      default:
+        return <RType>{
+          $or: queries.reduce((acc: Query<Model.Schema>[], query) => {
+            return acc.concat(resolveQuery(s, [query]))
+          }, [])
         }
-        return acc
-      }, {} as Query<Model.Schema>)
-    } as U2I<Queries>
+    }
   }
 }
