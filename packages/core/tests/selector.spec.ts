@@ -21,6 +21,25 @@ describe('Selector', function () {
       offset: 10
     })
   })
+  it('should query multi properties.', () => {
+    const selector = new Selector({
+      foo: dp('string')
+    }, {
+      bar: dp('number')
+    })
+    selector.where({
+      foo: { $eq: 'bar' },
+      bar: { $eq: 2 }
+    }, {
+      bar: { $eq: 1 }
+    })
+    expect(selector.queries[0]).to.be.deep.equal({
+      foo: { $eq: 'bar' }
+    })
+    expect(selector.queries[1]).to.be.deep.equal({
+      bar: { $eq: 1 }
+    })
+  })
   it('should resolve queries.', () => {
     const r = Selector.resolveQuery({
       foo: dp('number'),
