@@ -19,12 +19,10 @@ export const EntityModelSymbol = Symbol('EntityModel')
 
 export const OriginModelSymbol = Symbol('OriginModel')
 
-export class Entity<M extends Model> {
+export type Entity<M extends Model> = {
   [EntityModelSymbol]: M
-  constructor(model: M, data: Model.InferSchemaData<M['schema']>) {
-    this[EntityModelSymbol] = model
-    Object.assign(this, data)
-  }
+} &{
+  [k in keyof Model.InferSchemaData<M['schema']>]: any
 }
 
 export interface EntityConstructor<M extends Model, D = Model.InferSchemaData<M['schema']>>
@@ -47,9 +45,10 @@ export const createModel = <
       // @ts-ignore
       return target[p]
     },
-    construct(target, args) {
-      // @ts-ignore
-      return new Entity(target, ...args)
+    construct(target, [data]) {
+      const entity: Record<string | symbol, any> = {}
+      entity[EntityModelSymbol] = target
+      return Object.assign(entity, data)
     }
   })
   if (engine) {
