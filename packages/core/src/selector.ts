@@ -1,4 +1,5 @@
-import { Model } from './model'
+import { Entity, Model } from './model'
+import { Engine } from './engine'
 
 type U2I<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
 
@@ -33,8 +34,21 @@ export namespace Query {
   )
 }
 
+export interface Selector<
+  Schemas extends readonly Model.Schema[],
+  Props = U2I<Schemas[number]>,
+  E extends Engine<any> = Engine<any>,
+  // @ts-ignore
+  _E = Entity<Model<E, Props>>
+> extends Promise<_E[]> {
+}
+
 export class Selector<
-  Schemas extends readonly Model.Schema[], Props = U2I<Schemas[number]>,
+  Schemas extends readonly Model.Schema[],
+  Props = U2I<Schemas[number]>,
+  E extends Engine<any> = Engine<any>,
+  // @ts-ignore
+  _E = Entity<Model<E, Props>>
 > {
   options: {
     limit?: number;
@@ -42,8 +56,20 @@ export class Selector<
   } = {}
   queries: Query<Props>[] = []
   properties = [] as any as Schemas
-  constructor(...properties: Schemas) {
+  constructor(
+    fn?: (sel: Selector<Schemas, Props, E, _E>) => Promise<_E[]>,
+    ...properties: Schemas
+  ) {
     this.properties = properties
+    return new Proxy(this as this & Promise<_E[]>, {
+      get: (target, p: string) => {
+        if (['then', 'catch', 'finally'].includes(p)) {
+          return (...args: any[]) => Promise.resolve(fn?.(this)).then(...args)
+        }
+        // @ts-ignore
+        return this[p]
+      }
+    })
   }
   where(...queries: Query<Props>[]) {
     this.queries.push(...queries)
