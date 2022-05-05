@@ -8,6 +8,8 @@ describe('Model', function () {
       nickname: dp('varchar(72)'),
       username: dp('varchar(72)').unique
     })
+    expect(UModel.schema.username.$content[OriginModelSymbol])
+      .to.be.equal(UModel[OriginModelSymbol])
     expect(UModel.name)
       .to.be.equal('User')
     expect(UModel.schema.id.$content.type)

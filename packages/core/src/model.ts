@@ -10,8 +10,14 @@ export class Model<E extends Engine<any> = Engine<any>, S extends Model.Schema =
   ) {
     super()
     this.name = name
-    this.schema = schema
+    this.schema = this.resolveSchema(schema)
     this.engine = engine
+  }
+  private resolveSchema(schema: S): S {
+    Object.entries(schema).forEach(([_, prop]) => {
+      prop.$content[OriginModelSymbol] = this
+    })
+    return schema
   }
 }
 
@@ -173,6 +179,7 @@ export namespace Model {
     notnull: boolean
     autoinc: boolean
     required: boolean
+    [OriginModelSymbol]: Model
   }
 
   export type PropTypeWithSize<T extends string> =
