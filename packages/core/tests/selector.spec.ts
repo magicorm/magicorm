@@ -34,7 +34,8 @@ describe('Selector', function () {
       bar: { $eq: 1 }
     })
     expect(selector.queries[0]).to.be.deep.equal({
-      foo: { $eq: 'bar' }
+      foo: { $eq: 'bar' },
+      bar: { $eq: 2 }
     })
     expect(selector.queries[1]).to.be.deep.equal({
       bar: { $eq: 1 }
