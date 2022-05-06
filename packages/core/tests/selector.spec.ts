@@ -65,10 +65,7 @@ describe('Selector', function () {
     ).to.be.deep.equal([{ foo: 1 }, 2, 3])
   })
   it('should resolve queries.', () => {
-    const r = Selector.resolveQuery({
-      foo: dp('number'),
-      bar: dp('string')
-    }, [{
+    const r = Selector.resolveQuery([{
       foo: 1
     }, {
       bar: {

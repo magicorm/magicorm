@@ -34,6 +34,7 @@ export namespace Query {
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface Selector<
   Schemas extends readonly Model.Schema[],
   Props = U2I<Schemas[number]>,
@@ -55,12 +56,12 @@ export class Selector<
     offset?: number;
   } = {}
   queries: Query<Props>[] = []
-  properties = [] as any as Schemas
+  properties: Model.Schema
   constructor(
     fn?: (sel: Selector<Schemas, Props, E, _E>) => Promise<_E[]>,
-    ...properties: Schemas
+    ...schemas: Schemas
   ) {
-    this.properties = properties
+    this.properties = Object.assign({}, ...schemas)
     return new Proxy(this as this & Promise<_E[]>, {
       get: (target, p: string) => {
         if (['then', 'catch', 'finally'].includes(p)) {
@@ -96,7 +97,7 @@ export namespace Selector {
         return { $eq: v }
     }
   }
-  export function resolveQuery<S extends Model.Schema, Queries extends readonly Query<S>[]>(s: S, queries: Queries): Query<S> {
+  export function resolveQuery<S extends Model.Schema, Queries extends readonly Query<S>[]>(queries: Queries): Query<S> {
     type RType = Query<S>
     switch (queries.length) {
       case 0:
@@ -109,7 +110,7 @@ export namespace Selector {
       default:
         return <RType>{
           $or: queries.reduce((acc: Query<Model.Schema>[], query) => {
-            return acc.concat(resolveQuery(s, [query]))
+            return acc.concat(resolveQuery([query]))
           }, [])
         }
     }
