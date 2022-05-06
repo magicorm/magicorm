@@ -1,5 +1,6 @@
 import { AbsConnector } from './connector'
 import { Entity, Model, modelsCache } from './model'
+import { Selector } from './selector'
 
 export interface DriverOptionsMap {
   [p: string]: any
@@ -14,8 +15,8 @@ export interface Driver<
   Connector extends AbsConnector<Name> = AbsConnector<Name>
   > {
   name: Name
+  connect: () => Awaited<Connector>
   options?: DriverOptionsMap[Name]
-  connect(): Awaited<Connector>
   /**
    * Remove table from db
    */
@@ -35,7 +36,11 @@ export interface Driver<
   /**
    * Search results by query
    */
-  // search: () => Awaited<void>
+  search: <Schemas extends readonly Model.Schema[]>(
+    conn: Connector,
+    opts?: Driver.OperatOptions,
+    ...properties: Schemas
+  ) => Selector<Schemas>
   /**
    * Update data for model
    */

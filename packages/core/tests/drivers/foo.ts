@@ -1,4 +1,13 @@
-import { AbsConnector, AbsDriver, Driver, Entity, EntityModelSymbol, Model } from '@magicorm/core'
+import {
+  AbsConnector,
+  AbsDriver,
+  Driver,
+  Entity,
+  EntityModelSymbol,
+  Model,
+  OriginModelSymbol,
+  Selector
+} from '@magicorm/core'
 
 declare module '@magicorm/core' {
   interface DriverOptionsMap {
@@ -48,6 +57,22 @@ class FooDriver extends AbsDriver<'foo'> implements Driver<'foo', Connector> {
       conn.db[m.name].push(...entities)
     }
     return entities
+  }
+  search<Schemas extends readonly Model.Schema[]>(
+    conn: Connector,
+    opts?: Driver.OperatOptions,
+    ...properties: Schemas
+  ) {
+    return new Selector(async sel => {
+      const { offset, limit } = sel.options
+      const query = Selector.resolveQuery(sel.queries)
+      const models = Object.entries(sel.properties).reduce((acc, [key, prop]) => {
+        console.log('acc:', acc)
+        // acc.push(prop[OriginModelSymbol])
+        return acc
+      }, [])
+      return []
+    }, ...properties)
   }
 }
 
