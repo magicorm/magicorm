@@ -1,0 +1,8 @@
+{
+  "name": "@magicorm/driver-memory",
+  "version": "0.1.0",
+  "description": "Magic ORM memory driver.",
+  "main": "dist/index.js",
+  "author": "yijie",
+  "license": "MIT"
+}

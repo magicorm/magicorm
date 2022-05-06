@@ -1,0 +1,8 @@
+{
+  "name": "@magicorm/driver-mysql",
+  "version": "0.1.0",
+  "description": "Magic ORM mysql driver.",
+  "main": "dist/index.js",
+  "author": "yijie",
+  "license": "MIT"
+}

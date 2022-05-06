@@ -1,0 +1,8 @@
+{
+  "name": "@magicorm/driver-mongodb",
+  "version": "0.1.0",
+  "description": "Magic ORM mongodb driver.",
+  "main": "dist/index.js",
+  "author": "yijie",
+  "license": "MIT"
+}

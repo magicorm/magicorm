@@ -1,0 +1,8 @@
+{
+  "name": "@magicorm/driver-postgresql",
+  "version": "0.1.0",
+  "description": "Magic ORM postgresql driver.",
+  "main": "dist/index.js",
+  "author": "yijie",
+  "license": "MIT"
+}

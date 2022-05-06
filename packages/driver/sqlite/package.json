@@ -1,0 +1,8 @@
+{
+  "name": "@magicorm/driver-sqlite",
+  "version": "0.1.0",
+  "description": "Magic ORM sqlite driver.",
+  "main": "dist/index.js",
+  "author": "yijie",
+  "license": "MIT"
+}
