@@ -1,8 +1,7 @@
 import { AbsConnector } from './connector'
 import { Entity, Model, modelsCache } from './model'
 import { Query, Selector } from './selector'
-
-type U2I<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
+import { U2I } from './types'
 
 export interface DriverOptionsMap {
   [p: string]: any
