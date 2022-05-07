@@ -34,7 +34,7 @@ export interface Driver<
    * Delete data for model
    */
   delete: <Models extends Model[]>(
-    models: Models, query: Query<Model.InferSchema<U2I<Models[number]>>>,
+    models: Models, query: Engine.Models2Query<Models>,
     conn: Connector,
     opts?: Driver.OperatOptions
   ) => Awaited<void>
@@ -50,7 +50,7 @@ export interface Driver<
    * Update data for model
    */
   update: <Models extends Model[]>(
-    models: Models, query: Query<Model.InferSchema<U2I<Models[number]>>>,
+    models: Models, query: Engine.Models2Query<Models>,
     conn: Connector,
     opts?: Driver.OperatOptions
   ) => Awaited<void>
@@ -58,7 +58,7 @@ export interface Driver<
    * Update or Insert data to model
    */
   upsert: <Models extends Model[]>(
-    models: Models, query: Query<Model.InferSchema<U2I<Models[number]>>>,
+    models: Models, query: Engine.Models2Query<Models>,
     conn: Connector,
     opts?: Driver.OperatOptions
   ) => Awaited<void>
@@ -147,6 +147,7 @@ export function createEngine<DriverName extends Engine.Drivers>(options: Engine.
 
 export namespace Engine {
   export type Drivers = keyof DriverOptionsMap
+  export type Models2Query<Models extends Model[]> = Query<Model.InferSchema<U2I<Models[number]>>>
   export interface Options<DriverName extends Drivers> {
     driver: DriverName
     driverOptions?: DriverOptionsMap[DriverName]
