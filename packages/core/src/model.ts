@@ -94,6 +94,7 @@ export const dp = defineProp
 
 export namespace Model {
   export type Schema = Record<string, Pick<PropDesc<Prop>, '$content'>>
+  export type InferSchema<M> = M extends Model<any, infer S> ? S : never
   export type InferSchemaData<S extends Schema> = {
     [K in keyof S]: S[K]['$content']['default']
   };
