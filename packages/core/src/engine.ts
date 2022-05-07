@@ -21,29 +21,29 @@ export interface Driver<
   /**
    * Remove table from db
    */
-  remove: (m: Model, conn: Connector, opts?: Driver.OperatOptions) => Awaited<void>
+  remove: (m: Model, conn: Connector, opts?: Driver.OperateOptions) => Awaited<void>
   /**
    * Create table from db
    */
-  create: (m: Model, conn: Connector, opts?: Driver.OperatOptions) => Awaited<void>
+  create: (m: Model, conn: Connector, opts?: Driver.OperateOptions) => Awaited<void>
   /**
    * Insert data to model
    */
-  insert: (entities: Entity<Model>[], conn: Connector, opts?: Driver.OperatOptions) => Awaited<Entity<Model>[]>
+  insert: (entities: Entity<Model>[], conn: Connector, opts?: Driver.OperateOptions) => Awaited<Entity<Model>[]>
   /**
    * Delete data for model
    */
   delete: <Models extends Model[]>(
     models: Models, query: Engine.Models2Query<Models>,
     conn: Connector,
-    opts?: Driver.OperatOptions
+    opts?: Driver.OperateOptions
   ) => Awaited<void>
   /**
    * Search results by query
    */
   search: <Schemas extends readonly Model.Schema[]>(
     conn: Connector,
-    opts?: Driver.OperatOptions,
+    opts?: Driver.OperateOptions,
     ...properties: Schemas
   ) => Selector<Schemas>
   /**
@@ -52,7 +52,7 @@ export interface Driver<
   update: <Models extends Model[]>(
     models: Models, query: Engine.Models2Query<Models>,
     conn: Connector,
-    opts?: Driver.OperatOptions
+    opts?: Driver.OperateOptions
   ) => Awaited<void>
   /**
    * Update or Insert data to model
@@ -60,7 +60,7 @@ export interface Driver<
   upsert: <Models extends Model[]>(
     models: Models, query: Engine.Models2Query<Models>,
     conn: Connector,
-    opts?: Driver.OperatOptions
+    opts?: Driver.OperateOptions
   ) => Awaited<void>
 }
 
@@ -100,7 +100,7 @@ export namespace Driver {
       throw new Error('Driver name must be a string')
     }
   }
-  export interface OperatOptions {
+  export interface OperateOptions {
   }
 }
 

@@ -60,7 +60,7 @@ class FooDriver extends AbsDriver<'foo'> implements Driver<'foo', Connector> {
   }
   search<Schemas extends readonly Model.Schema[]>(
     conn: Connector,
-    opts?: Driver.OperatOptions,
+    opts?: Driver.OperateOptions,
     ...properties: Schemas
   ) {
     return new Selector(async sel => {
