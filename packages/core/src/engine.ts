@@ -1,6 +1,8 @@
 import { AbsConnector } from './connector'
 import { Entity, Model, modelsCache } from './model'
-import { Selector } from './selector'
+import { Query, Selector } from './selector'
+
+type U2I<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
 
 export interface DriverOptionsMap {
   [p: string]: any
@@ -32,7 +34,11 @@ export interface Driver<
   /**
    * Delete data for model
    */
-  // delete: (m: Model) => Awaited<void>
+  delete: <Models extends Model[]>(
+    models: Models, query: Query<Model.InferSchema<U2I<Models[number]>>>,
+    conn: Connector,
+    opts?: Driver.OperatOptions
+  ) => Awaited<void>
   /**
    * Search results by query
    */
@@ -44,11 +50,19 @@ export interface Driver<
   /**
    * Update data for model
    */
-  // update: (m: Model) => Awaited<void>
+  update: <Models extends Model[]>(
+    models: Models, query: Query<Model.InferSchema<U2I<Models[number]>>>,
+    conn: Connector,
+    opts?: Driver.OperatOptions
+  ) => Awaited<void>
   /**
    * Update or Insert data to model
    */
-  // upsert: (m: Model) => Awaited<void>
+  upsert: <Models extends Model[]>(
+    models: Models, query: Query<Model.InferSchema<U2I<Models[number]>>>,
+    conn: Connector,
+    opts?: Driver.OperatOptions
+  ) => Awaited<void>
 }
 
 export abstract class AbsDriver<Name extends Engine.Drivers> {
