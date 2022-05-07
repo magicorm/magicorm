@@ -101,7 +101,6 @@ export namespace Driver {
     }
   }
   export interface OperatOptions {
-    transaction?: any
   }
 }
 
