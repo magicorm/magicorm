@@ -15,7 +15,8 @@ describe('Mysql', function () {
       user: 'root',
       host: 'localhost',
       port: 3306,
-      password: 'rYy(sql,1values,;4(err,'
+      password: 'rYy(sql,1values,;4(err,',
+      database: 'magicorm_unit_test'
     })
     const ctor = driver.connect()
     await ctor.onConnect
