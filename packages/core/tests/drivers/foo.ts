@@ -1,7 +1,7 @@
 import {
   AbsConnector,
   AbsDriver,
-  Driver,
+  Driver, Engine,
   Entity,
   EntityModelSymbol,
   Model,
@@ -73,6 +73,15 @@ class FooDriver extends AbsDriver<'foo'> implements Driver<'foo', Connector> {
       }, [])
       return []
     }, ...properties)
+  }
+
+  delete<Models extends Model[]>(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
+  }
+
+  update<Models extends Model[]>(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
+  }
+
+  upsert<Models extends Model[]>(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
   }
 }
 
