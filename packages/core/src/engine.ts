@@ -65,11 +65,12 @@ export interface Driver<
 }
 
 export abstract class AbsDriver<Name extends Engine.Drivers> {
+  public options: DriverOptionsMap[Name]
   protected constructor(
-    public name: Name, public options?: DriverOptionsMap[Name]
+    public name: Name, options?: DriverOptionsMap[Name]
   ) {
     this.name = name
-    this.options = options
+    this.options = options || {}
   }
 }
 
