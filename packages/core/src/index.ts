@@ -1,6 +1,7 @@
 export * from './connector'
 export * from './desc'
 export * from './engine'
+export * from './errors'
 export * from './model'
 export * from './selector'
 export * from './types'
