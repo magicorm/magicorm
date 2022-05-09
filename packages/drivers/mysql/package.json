@@ -3,6 +3,13 @@
   "version": "0.1.0",
   "description": "Magic ORM mysql driver.",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "author": "yijie",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@vlasky/mysql": "^2.18.5"
+  },
+  "devDependencies": {
+    "@types/mysql": "^2.15.21"
+  }
 }
