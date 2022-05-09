@@ -7,7 +7,7 @@ import {
   Entity,
   Model,
   Selector,
-  UnconnectedDatabaseError
+  UnconnectedDatabaseError, UnknownDatabaseError
 } from '@magicorm/core'
 
 interface Options extends ConnectionConfig {
@@ -34,9 +34,15 @@ class Connector extends AbsConnector<'mysql'> {
 
     this.onConnect = new Promise<void>((resolve, reject) => {
       this.inner.connect(err => {
-        if (err)
+        if (err) {
+          if (err.code === 'ER_BAD_DB_ERROR') {
+            const [, dbName] = /Unknown database '(.+)'/[Symbol.match](err.sqlMessage ?? '') ?? []
+            if (dbName) {
+              reject(new UnknownDatabaseError(dbName))
+            }
+          }
           reject(err)
-        else
+        } else
           resolve()
       })
     })
