@@ -86,6 +86,42 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
   remove(m: Model, conn: Connector, opts?: Driver.OperateOptions) {
   }
 
+  static resolveSchema(name: string, schema: Model.Schema) {
+    let primaryCount = 0
+    const propertiesDef = Object.entries(schema)
+      .map(([key, value]) => {
+        if (value.$content.primary && primaryCount++ > 0)
+          throw new Error(`Primary key '${key}' is already defined`)
+        return MysqlDriver.resolveSchemaProperty(name, key, value.$content)
+      })
+      .join(', ')
+    return `create table \`${ name }\` (${ propertiesDef });`
+  }
+
+  static resolveSchemaProperty(
+    name: string,
+    key: string,
+    $content: Model.PropDesc<Model.Prop>['$content']
+  ) {
+    let def = `\`${ key }\``
+    let type = {
+      string: 'varchar'
+    }[$content.type as string] ?? $content.type
+    // set default size when type is string
+    if (type === 'string')
+      $content.size = 255
+    if ($content.size)
+      type += `(${ $content.size })`
+    def += ` ${ type }`
+    if ($content.notnull)
+      def += ' not null'
+    if ($content.autoinc)
+      def += ' auto_increment'
+    if ($content.primary)
+      def += `, constraint ${ name }_pk primary key (${ key })`
+    return def
+  }
+
   create(m: Model, conn: Connector, opts?: Driver.OperateOptions) {
   }
 
