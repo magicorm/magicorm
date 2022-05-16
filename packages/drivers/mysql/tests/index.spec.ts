@@ -9,17 +9,22 @@ after(() => {
   process.exit(0)
 })
 
+const connectDriver = async () => {
+  const driver = new MysqlDriver({
+    user: 'root',
+    host: 'localhost',
+    port: 3306,
+    password: 'rYy(sql,1values,;4(err,',
+    database: 'magicorm_unit_test'
+  })
+  const ctor = driver.connect()
+  await ctor.onConnect
+  return [driver, ctor] as const
+}
+
 describe('Mysql', function () {
-  it('should connect mysql', async () => {
-    const driver = new MysqlDriver({
-      user: 'root',
-      host: 'localhost',
-      port: 3306,
-      password: 'rYy(sql,1values,;4(err,',
-      database: 'magicorm_unit_test'
-    })
-    const ctor = driver.connect()
-    await ctor.onConnect
+  it('should connect.', async () => {
+    const [driver, ctor] = await connectDriver()
     expect(await driver.exec(ctor, 'select 1 as A'))
       .to.be.deep.equal([{ A: 1 }])
     expect(await driver.exec(ctor, 'select ? as A', [2]))
