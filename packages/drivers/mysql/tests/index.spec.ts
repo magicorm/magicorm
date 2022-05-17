@@ -47,19 +47,35 @@ describe('Mysql', function () {
     it('should generate create table sql.', () => {
       expect(MysqlDriver.resolveSchema(User.name, User.schema))
         .to.be.eq(
-          'create table `user` (`id` int auto_increment, constraint user_pk primary key (id), `name` varchar(255) not null, `age` int not null);'
+          'create table `user` (`id` int auto_increment, constraint user_pk primary key (id), `name` varchar(255) not null unique, `age` int not null);'
         )
-      const Temp0 = createModel('temp', {
+      const Temp00 = createModel('temp', {
+        foo: dp('int').primary,
+        bar: dp('string').notnull,
+        baz: dp('int(10)').unique
+      })
+      expect(MysqlDriver.resolveSchema(Temp00.name, Temp00.schema))
+        .to.be.eq(
+        'create table `temp` (`foo` int, constraint temp_pk primary key (foo), `bar` varchar(255) not null, `baz` int(10) unique);'
+      )
+      const Temp01 = createModel('temp', {
+        foo: dp('int').comment('test comment')
+      })
+      expect(MysqlDriver.resolveSchema(Temp01.name, Temp01.schema))
+        .to.be.eq(
+        'create table `temp` (`foo` int comment \'test comment\');'
+      )
+      const Temp10 = createModel('temp', {
         foo: dp('int').primary,
         bar: dp('int').primary
       })
-      expect(MysqlDriver.resolveSchema.bind(MysqlDriver, Temp0.name, Temp0.schema))
+      expect(MysqlDriver.resolveSchema.bind(MysqlDriver, Temp10.name, Temp10.schema))
         .to.be.throw('Primary key \'foo\' is already defined')
-      const Temp1 = createModel('temp', {
+      const Temp11 = createModel('temp', {
         foo: dp('int').primary,
         bar: dp('int').autoinc
       })
-      expect(MysqlDriver.resolveSchema.bind(MysqlDriver, Temp1.name, Temp1.schema))
+      expect(MysqlDriver.resolveSchema.bind(MysqlDriver, Temp11.name, Temp11.schema))
         .to.be.throw('Autoincrement property \'bar\' must be primary')
     })
   })

@@ -123,6 +123,10 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
         throw new Error(`Autoincrement property '${ key }' must be primary`)
       def += ' auto_increment'
     }
+    if ($content.unique)
+      def += ' unique'
+    if ($content.comment)
+      def += ` comment '${ $content.comment }'`
     if ($content.primary)
       def += `, constraint ${ name }_pk primary key (${ key })`
     return def
