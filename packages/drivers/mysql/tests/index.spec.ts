@@ -44,11 +44,23 @@ describe('Mysql', function () {
     driver.create(User, ctor)
   })
   describe('Static', function () {
-    it('should generate create table sql.', async () => {
+    it('should generate create table sql.', () => {
       expect(MysqlDriver.resolveSchema(User.name, User.schema))
         .to.be.eq(
-          'create table `user` (`id` int auto_increment, constraint user_pk primary key (id), `name` varchar not null, `age` int not null);'
+          'create table `user` (`id` int auto_increment, constraint user_pk primary key (id), `name` varchar(255) not null, `age` int not null);'
         )
+      const Temp0 = createModel('temp', {
+        foo: dp('int').primary,
+        bar: dp('int').primary
+      })
+      expect(MysqlDriver.resolveSchema.bind(MysqlDriver, Temp0.name, Temp0.schema))
+        .to.be.throw('Primary key \'foo\' is already defined')
+      const Temp1 = createModel('temp', {
+        foo: dp('int').primary,
+        bar: dp('int').autoinc
+      })
+      expect(MysqlDriver.resolveSchema.bind(MysqlDriver, Temp1.name, Temp1.schema))
+        .to.be.throw('Autoincrement property \'bar\' must be primary')
     })
   })
 })

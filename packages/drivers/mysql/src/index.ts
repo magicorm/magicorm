@@ -87,11 +87,14 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
   }
 
   static resolveSchema(name: string, schema: Model.Schema) {
-    let primaryCount = 0
+    let prePrimaryKey = ''
     const propertiesDef = Object.entries(schema)
       .map(([key, value]) => {
-        if (value.$content.primary && primaryCount++ > 0)
-          throw new Error(`Primary key '${key}' is already defined`)
+        if (value.$content.primary) {
+          if (prePrimaryKey)
+            throw new Error(`Primary key '${ prePrimaryKey }' is already defined.`)
+          prePrimaryKey = key
+        }
         return MysqlDriver.resolveSchemaProperty(name, key, value.$content)
       })
       .join(', ')
@@ -108,15 +111,18 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
       string: 'varchar'
     }[$content.type as string] ?? $content.type
     // set default size when type is string
-    if (type === 'string')
+    if ($content.type === 'string' && $content.size === undefined)
       $content.size = 255
     if ($content.size)
       type += `(${ $content.size })`
     def += ` ${ type }`
     if ($content.notnull)
       def += ' not null'
-    if ($content.autoinc)
+    if ($content.autoinc) {
+      if (!$content.primary)
+        throw new Error(`Autoincrement property '${ key }' must be primary`)
       def += ' auto_increment'
+    }
     if ($content.primary)
       def += `, constraint ${ name }_pk primary key (${ key })`
     return def
