@@ -9,14 +9,16 @@ after(() => {
   process.exit(0)
 })
 
+const driverOptions: ConstructorParameters<typeof MysqlDriver>[0] = {
+  user: 'root',
+  host: 'localhost',
+  port: 3306,
+  password: 'rYy(sql,1values,;4(err,',
+  database: 'magicorm_unit_test'
+}
+
 const connectDriver = async () => {
-  const driver = new MysqlDriver({
-    user: 'root',
-    host: 'localhost',
-    port: 3306,
-    password: 'rYy(sql,1values,;4(err,',
-    database: 'magicorm_unit_test'
-  })
+  const driver = new MysqlDriver(driverOptions)
   const ctor = driver.connect()
   await ctor.onConnect
   return [driver, ctor] as const
@@ -41,7 +43,14 @@ describe('Mysql', function () {
   })
   it('should create table and drop it.', async () => {
     const [driver, ctor] = await connectDriver()
-    driver.create(User, ctor)
+    await driver.create(User, ctor)
+    expect(
+      await driver.exec(ctor, `select TABLE_NAME from information_schema.TABLES where TABLE_SCHEMA='${ driverOptions.database }';`)
+    ).to.be.lengthOf(1)
+    await driver.remove(User, ctor)
+    expect(
+      await driver.exec(ctor, `select TABLE_NAME from information_schema.TABLES where TABLE_SCHEMA='${ driverOptions.database }';`)
+    ).to.be.lengthOf(0)
   })
   describe('Static', function () {
     it('should generate create table sql.', () => {

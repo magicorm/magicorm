@@ -83,7 +83,8 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
     return new Connector(this.options)
   }
 
-  remove(m: Model, conn: Connector, opts?: Driver.OperateOptions) {
+  remove(m: Model, conn: Connector) {
+    return this.exec(conn, `drop table ${m.name};`)
   }
 
   static resolveSchema(name: string, schema: Model.Schema) {
@@ -132,7 +133,8 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
     return def
   }
 
-  create(m: Model, conn: Connector, opts?: Driver.OperateOptions) {
+  create(m: Model, conn: Connector) {
+    return this.exec(conn, MysqlDriver.resolveSchema(m.name, m.schema))
   }
 
   delete<
