@@ -137,29 +137,25 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
     return this.exec(conn, MysqlDriver.resolveSchema(m.name, m.schema))
   }
 
+  insert(entities: Entity<Model>[], conn: Connector, opts?: Driver.OperateOptions) {
+    return []
+  }
+
   delete<
     Models extends Model[]
   >(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
   }
 
-  insert(entities: Entity<Model>[], conn: Connector, opts?: Driver.OperateOptions) {
-    return []
+  update<Models extends Model[]>(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
+  }
+
+  upsert<Models extends Model[]>(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
   }
 
   search<
     Schemas extends readonly Model.Schema[]
   >(conn: Connector, opts?: Driver.OperateOptions, ...properties: Schemas) {
     return new Selector(async () => [], ...properties)
-  }
-
-  update<
-    Models extends Model[]
-  >(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
-  }
-
-  upsert<
-    Models extends Model[]
-  >(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
   }
 }
 
