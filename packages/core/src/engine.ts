@@ -29,7 +29,7 @@ export interface Driver<
   /**
    * Insert data to model
    */
-  insert: (entities: Entity<Model>[], conn: Connector, opts?: Driver.OperateOptions) => Awaited<Entity<Model>[]>
+  insert: <M extends Model>(entities: Entity<M>[], conn: Connector, opts?: Driver.OperateOptions) => Awaited<Entity<M>[]>
   /**
    * Delete data for model
    */
