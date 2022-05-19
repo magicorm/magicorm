@@ -4,7 +4,7 @@ import {
   AbsDriver,
   Driver,
   Engine,
-  Entity,
+  Entity, EntityModelSymbol,
   Model,
   Selector,
   UnconnectedDatabaseError, UnknownDatabaseError
@@ -137,7 +137,20 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
     return this.exec(conn, MysqlDriver.resolveSchema(m.name, m.schema))
   }
 
-  insert(entities: Entity<Model>[], conn: Connector, opts?: Driver.OperateOptions) {
+  static resolveEntities<M extends Model>(entities: Entity<M>[]) {
+    const m = entities[0][EntityModelSymbol]
+    const keys = Object.keys(m.schema)
+    return [
+      `insert into \`${ m.name }\` (${
+        keys.map(key => `\`${ key }\``).join(', ')
+      }) values (${
+        entities.map(() => keys.map(() => '?').join(', ')).join('), (')
+      });`,
+      entities.reduce((acc, e) => acc.concat(keys.map(k => e[k])), [] as any[])
+    ]
+  }
+
+  insert<M extends Model>(entities: Entity<M>[], conn: Connector) {
     return []
   }
 

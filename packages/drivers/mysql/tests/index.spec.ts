@@ -87,5 +87,15 @@ describe('Mysql', function () {
       expect(MysqlDriver.resolveSchema.bind(MysqlDriver, Temp11.name, Temp11.schema))
         .to.be.throw('Autoincrement property \'bar\' must be primary')
     })
+    it('should resolve entities.', () => {
+      const [sql, values] = MysqlDriver.resolveEntities([
+        new User({ id: 1, name: 'foo', age: 10 }),
+        new User({ id: 2, name: 'foo', age: 10 })
+      ])
+      expect(sql)
+        .to.be.eq('insert into `user` (`id`, `name`, `age`) values (?, ?, ?), (?, ?, ?);')
+      expect(values)
+        .to.be.deep.eq([ 1, 'foo', 10, 2, 'foo', 10 ])
+    })
   })
 })
