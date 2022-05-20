@@ -139,15 +139,17 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
 
   static resolveEntities<M extends Model>(entities: Entity<M>[]) {
     const m = entities[0][EntityModelSymbol]
-    const keys = Object.keys(m.schema)
+    const keys = Object.keys(m.schema) as (keyof Entity<M>)[]
     return [
       `insert into \`${ m.name }\` (${
-        keys.map(key => `\`${ key }\``).join(', ')
+        keys.map(key => `\`${ key as string }\``).join(', ')
       }) values (${
         entities.map(() => keys.map(() => '?').join(', ')).join('), (')
       });`,
-      // @ts-ignore
-      entities.reduce((acc, e) => acc.concat(keys.map(k => e[k])), [] as any[])
+      entities.reduce(
+        (acc, e) => acc.concat(keys.map(k => e[k])),
+        [] as any[]
+      )
     ]
   }
 

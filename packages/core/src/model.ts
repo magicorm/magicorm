@@ -60,8 +60,7 @@ export const createModel = <
   if (engine) {
     engine.registerModel(model)
   } else {
-    // @ts-ignore
-    modelsCache.push(model)
+    modelsCache.push(model as EntityConstructor<Model>)
   }
   return model
 }
@@ -116,8 +115,6 @@ export namespace Model {
         [K in RequiredKeys]: GetPropKey<S[K], 'default'>
       }
   )
-  type T0 = GetOptionalKeys<{}>
-  type T1 = Exclude<keyof {}, T0>
   export type GetPropKey<
     P extends Pick<PropDesc<Prop>, '$content'>,
     Key extends keyof P['$content']
