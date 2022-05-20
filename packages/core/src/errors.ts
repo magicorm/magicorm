@@ -9,3 +9,9 @@ export class UnconnectedDatabaseError extends Error {
     super('The database is not connected, please check the connection status between the machine and the database')
   }
 }
+
+export class DuplicatedDatabaseError extends Error {
+  constructor(key: string, val: any) {
+    super(`Duplicate property value ${ val } for key \`${ key }\``)
+  }
+}
