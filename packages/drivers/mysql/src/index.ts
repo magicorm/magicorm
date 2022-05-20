@@ -146,6 +146,7 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
       }) values (${
         entities.map(() => keys.map(() => '?').join(', ')).join('), (')
       });`,
+      // @ts-ignore
       entities.reduce((acc, e) => acc.concat(keys.map(k => e[k])), [] as any[])
     ]
   }
