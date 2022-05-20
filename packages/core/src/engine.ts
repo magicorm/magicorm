@@ -29,7 +29,7 @@ export interface Driver<
   /**
    * Insert data to model
    */
-  insert: <M extends Model>(entities: Entity<M>[], conn: Connector, opts?: Driver.OperateOptions) => Awaited<Entity<M>[]>
+  insert: <M extends Model>(entities: Entity<M>[], conn: Connector, opts?: Driver.OperateOptions) => Entity<M>[] | Promise<Entity<M>[]>
   /**
    * Delete data for model
    */
@@ -37,7 +37,7 @@ export interface Driver<
     models: Models, query: Engine.Models2Query<Models>,
     conn: Connector,
     opts?: Driver.OperateOptions
-  ) => Awaited<void>
+  ) => void | Promise<void>
   /**
    * Search results by query
    */
@@ -53,7 +53,7 @@ export interface Driver<
     models: Models, query: Engine.Models2Query<Models>,
     conn: Connector,
     opts?: Driver.OperateOptions
-  ) => Awaited<void>
+  ) => void | Promise<void>
   /**
    * Update or Insert data to model
    */
@@ -61,7 +61,7 @@ export interface Driver<
     models: Models, query: Engine.Models2Query<Models>,
     conn: Connector,
     opts?: Driver.OperateOptions
-  ) => Awaited<void>
+  ) => void | Promise<void>
 }
 
 export abstract class AbsDriver<Name extends Engine.Drivers> {
