@@ -103,7 +103,7 @@ describe('Mysql', function () {
       expect(sql)
         .to.be.eq('insert into `user` (`id`, `name`, `age`) values (?, ?, ?), (?, ?, ?);')
       expect(values)
-        .to.be.deep.eq([ 1, 'foo', 10, 2, 'foo', 10 ])
+        .to.be.deep.eq([ undefined, 'foo', 10, undefined, 'foo', 10 ])
     })
   })
 })
