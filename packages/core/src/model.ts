@@ -37,7 +37,7 @@ export interface EntityConstructor<M extends Model, D = Model.InferSchemaData<M[
   new(data: D): Entity<M> & D
 }
 
-export const modelsCache: EntityConstructor<Model<any, any>>[] = []
+export const modelsCache: EntityConstructor<Model>[] = []
 
 export const createModel = <
   E extends Engine<any> = Engine<any>,
@@ -60,6 +60,7 @@ export const createModel = <
   if (engine) {
     engine.registerModel(model)
   } else {
+    // @ts-ignore
     modelsCache.push(model)
   }
   return model
@@ -95,9 +96,32 @@ export const dp = defineProp
 export namespace Model {
   export type Schema = Record<string, Pick<PropDesc<Prop>, '$content'>>
   export type InferSchema<M> = M extends Model<any, infer S> ? S : never
-  export type InferSchemaData<S extends Schema> = {
-    [K in keyof S]: S[K]['$content']['default']
-  };
+  export type GetOptionalKeys<S extends Schema> = {
+    [K in keyof S]: S[K]['$content'] extends { primary: true } ? never : K
+  }[keyof S]
+  export type InferSchemaData<
+    S extends Schema,
+    OptionalKeys extends keyof S = GetOptionalKeys<S>,
+    RequiredKeys extends keyof S = Exclude<keyof S, OptionalKeys>
+  > = (
+    [OptionalKeys] extends [never]
+      ? {}
+      : {
+        [K in OptionalKeys]?: GetPropKey<S[K], 'default'>
+      }
+  ) & (
+    [RequiredKeys] extends [never]
+      ? {}
+      : {
+        [K in RequiredKeys]: GetPropKey<S[K], 'default'>
+      }
+  )
+  type T0 = GetOptionalKeys<{}>
+  type T1 = Exclude<keyof {}, T0>
+  export type GetPropKey<
+    P extends Pick<PropDesc<Prop>, '$content'>,
+    Key extends keyof P['$content']
+  > = Exclude<P['$content'][Key], undefined>
   export type GetPropType<P extends Pick<PropDesc<Prop>, '$content'>> = Exclude<P['$content']['type'], undefined>
 
   export namespace Types {

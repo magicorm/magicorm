@@ -42,17 +42,18 @@ describe('Model', function () {
   })
   it('should create entity from model.', () => {
     const UModel = createModel('User', {
-      id: dp('int'),
+      id: dp('int').primary,
       nickname: dp('varchar(72)'),
       username: dp('varchar(72)').unique
     })
     const u0 = new UModel({
-      id: 1,
       nickname: 'test',
       username: 'test'
     })
     expect(u0.id)
-      .to.be.equal(1)
+      .to.be.equal(undefined)
+    expect(u0.nickname)
+      .to.be.equal('test')
     expect(u0[EntityModelSymbol])
       .to.be.equal(UModel[OriginModelSymbol])
   })
