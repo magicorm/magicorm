@@ -52,6 +52,103 @@ describe('Mysql', function () {
       await driver.exec(ctor, `select TABLE_NAME from information_schema.TABLES where TABLE_SCHEMA='${ driverOptions.database }';`)
     ).to.be.lengthOf(0)
   })
+  describe('CRUD', function () {
+    let [driver, ctor]: Awaited<ReturnType<typeof connectDriver>> | [null, null] = [null, null]
+    before(async () => {
+      [driver, ctor] = await connectDriver()
+      await driver.create(User, ctor)
+    })
+    after(async () => {
+      if (!driver || !ctor)
+        return
+
+      await driver.remove(User, ctor)
+      await ctor.close()
+    })
+    it('should create entity and remove it.', async () => {
+      if (!driver || !ctor)
+        throw new Error('before test failed.')
+
+      expect(
+        await driver?.insert([], ctor)
+      ).to.be.deep.equal([])
+      expect(
+        await driver?.insert([
+          new User({ name: 'a', age: 1 })
+        ], ctor)
+      ).to.be.deep.equal([{
+        id: 1,
+        name: 'a',
+        age: 1
+      }])
+      expect(
+        await driver?.insert([
+          new User({ name: 'b', age: 1 }),
+          new User({ name: 'c', age: 1 })
+        ], ctor)
+      ).to.be.deep.equal([{
+        id: 2,
+        name: 'b',
+        age: 1
+      }, {
+        id: 3,
+        name: 'c',
+        age: 1
+      }])
+      expect(
+        await driver?.insert([
+          new User({ id: 4, name: 'd', age: 1 })
+        ], ctor)
+      ).to.be.deep.equal([{
+        id: 4,
+        name: 'd',
+        age: 1
+      }])
+      await expect(
+        driver?.insert([
+          new User({ id: 5, name: 'd', age: 1 })
+        ], ctor)
+      ).to.be.eventually.rejectedWith('Duplicate property value \'d\' for key `user.name`')
+      expect(
+        await driver?.insert([
+          new User({ name: 'e', age: 1 })
+        ], ctor)
+      ).to.be.deep.equal([{
+        id: 5,
+        name: 'e',
+        age: 1
+      }])
+      expect(
+        await driver?.insert([
+          new User({ id: 7, name: 'f', age: 1 }),
+          new User({ name: 'g', age: 1 }),
+          new User({ id: 100, name: 'h', age: 1 }),
+          new User({ name: 'i', age: 1 }),
+          new User({ name: 'j', age: 1 })
+        ], ctor)
+      ).to.be.deep.equal([
+        { id: 7, name: 'f', age: 1 },
+        { id: 8, name: 'g', age: 1 },
+        { id: 100, name: 'h', age: 1 },
+        { id: 101, name: 'i', age: 1 },
+        { id: 102, name: 'j', age: 1 }
+      ])
+      expect(
+        await driver.exec(ctor, `select * from ${ User.name };`)
+      ).to.be.deep.equal([
+        { id: 1, name: 'a', age: 1 },
+        { id: 2, name: 'b', age: 1 },
+        { id: 3, name: 'c', age: 1 },
+        { id: 4, name: 'd', age: 1 },
+        { id: 5, name: 'e', age: 1 },
+        { id: 7, name: 'f', age: 1 },
+        { id: 8, name: 'g', age: 1 },
+        { id: 100, name: 'h', age: 1 },
+        { id: 101, name: 'i', age: 1 },
+        { id: 102, name: 'j', age: 1 }
+      ])
+    })
+  })
   describe('Static', function () {
     it('should generate create table sql.', () => {
       expect(MysqlDriver.resolveSchema(User.name, User.schema))

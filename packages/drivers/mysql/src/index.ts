@@ -2,7 +2,7 @@ import { Connection, ConnectionConfig } from 'mysql'
 import {
   AbsConnector,
   AbsDriver,
-  Driver,
+  Driver, DuplicatedDatabaseError,
   Engine,
   Entity, EntityModelSymbol,
   Model,
@@ -60,12 +60,22 @@ class Connector extends AbsConnector<'mysql'> {
 }
 
 class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connector> {
+  static Connector = Connector
   constructor(options: Options) {
     super('mysql', options)
   }
 
   exec(conn: Connector, sql: string, values?: any[]) {
-    return new Promise((resolve, reject) => {
+    return new Promise<{
+      fieldCount: number
+      affectedRows: number
+      insertId: number
+      serverStatus: number
+      warningCount: number,
+      message: string
+      protocol41: boolean
+      changedRows: number
+    }>((resolve, reject) => {
       conn.inner.query(sql, values, (err, results) => {
         if (err) {
           if (err.message === 'Cannot enqueue Query after invoking quit.') {
@@ -150,11 +160,40 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
         (acc, e) => acc.concat(keys.map(k => e[k])),
         [] as any[]
       )
-    ]
+    ] as const
   }
 
-  insert<M extends Model>(entities: Entity<M>[], conn: Connector) {
-    return []
+  async insert<M extends Model>(entities: Entity<M>[], conn: Connector) {
+    if (entities.length === 0)
+      return []
+
+    const [sql, values] = MysqlDriver.resolveEntities(entities)
+    try {
+      const okPk = await this.exec(conn, sql, values)
+      let id = okPk.insertId
+      return entities.map(e => {
+        const primaryKey = Object.entries(e[EntityModelSymbol].schema)
+          .find(([, value]) => value.$content.primary && value.$content.autoinc)
+          ?.shift() as keyof Entity<M>
+        if (primaryKey) {
+          if (e[primaryKey]) {
+            id = e[primaryKey] + 1
+          } else {
+            e[primaryKey] = id++
+          }
+        }
+        return e
+      })
+    } catch (e) {
+      if (e instanceof Error) {
+        if (e.message.startsWith('ER_DUP_ENTRY')) {
+          const [, v, k] = /entry (.*) for key '(.+)'/[Symbol.match](e.message) ?? []
+          throw new DuplicatedDatabaseError(k, v)
+        }
+        throw e
+      }
+      throw e
+    }
   }
 
   delete<
