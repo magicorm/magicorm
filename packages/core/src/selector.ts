@@ -29,6 +29,7 @@ export namespace Query {
   ) & (
     T extends Model.Types.String ? {
       $like?: VT
+      $regex?: RegExp
     } : {}
   )
 }
