@@ -71,10 +71,10 @@ describe('Mysql', function () {
         throw new Error('before test failed.')
 
       expect(
-        await driver?.insert([], ctor)
+        await driver.insert([], ctor)
       ).to.be.deep.equal([])
       expect(
-        await driver?.insert([
+        await driver.insert([
           new User({ name: 'a', age: 1 })
         ], ctor)
       ).to.be.deep.equal([{
@@ -83,7 +83,7 @@ describe('Mysql', function () {
         age: 1
       }])
       expect(
-        await driver?.insert([
+        await driver.insert([
           new User({ name: 'b', age: 1 }),
           new User({ name: 'c', age: 1 })
         ], ctor)
@@ -97,7 +97,7 @@ describe('Mysql', function () {
         age: 1
       }])
       expect(
-        await driver?.insert([
+        await driver.insert([
           new User({ id: 4, name: 'd', age: 1 })
         ], ctor)
       ).to.be.deep.equal([{
@@ -106,12 +106,12 @@ describe('Mysql', function () {
         age: 1
       }])
       await expect(
-        driver?.insert([
+        driver.insert([
           new User({ id: 5, name: 'd', age: 1 })
         ], ctor)
       ).to.be.eventually.rejectedWith('Duplicate property value \'d\' for key `user.name`')
       expect(
-        await driver?.insert([
+        await driver.insert([
           new User({ name: 'e', age: 1 })
         ], ctor)
       ).to.be.deep.equal([{
@@ -120,7 +120,7 @@ describe('Mysql', function () {
         age: 1
       }])
       expect(
-        await driver?.insert([
+        await driver.insert([
           new User({ id: 7, name: 'f', age: 1 }),
           new User({ name: 'g', age: 1 }),
           new User({ id: 100, name: 'h', age: 1 }),
