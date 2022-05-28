@@ -293,9 +293,14 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
     return [where, values] as [string, any[]]
   }
 
-  delete<
+  async delete<
     Models extends Model[]
   >(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
+    const [where, values] = MysqlDriver.resolveQuery(query)
+    const tables = models.map(m => `\`${ m.name }\``).join(', ')
+    const sql = `delete from ${ tables } where ${ where }`
+    const { affectedRows } = await this.exec(conn, sql, values)
+    return affectedRows
   }
 
   update<Models extends Model[]>(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {

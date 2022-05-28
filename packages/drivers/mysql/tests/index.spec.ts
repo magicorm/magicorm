@@ -148,6 +148,22 @@ describe('Mysql', function () {
         { id: 101, name: 'i', age: 1 },
         { id: 102, name: 'j', age: 1 }
       ])
+
+      expect(
+        await driver.delete([User], { id: 0 }, ctor)
+      ).to.be.deep.equal(0)
+      expect(
+        await driver.delete([User], { id: 1 }, ctor)
+        // 1
+      ).to.be.deep.equal(1)
+      expect(
+        await driver.delete([User], { id: { $lt: 5 } }, ctor)
+        // 2,3,4
+      ).to.be.deep.equal(3)
+      expect(
+        await driver.delete([User], { id: { $gte: 2 } }, ctor)
+        // 5,7,8,100,101,102
+      ).to.be.deep.equal(6)
     })
   })
   describe('Static', function () {
