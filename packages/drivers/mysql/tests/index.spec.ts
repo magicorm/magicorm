@@ -25,12 +25,6 @@ const connectDriver = async () => {
 }
 
 describe('Mysql', function () {
-  const User = createModel('user', {
-    id: dp('int').primary.autoinc,
-    name: dp('string').notnull.unique,
-    age: dp('int').notnull,
-    ctime: dp('date')
-  })
   it('should connect.', async () => {
     const [driver, ctor] = await connectDriver()
     expect(await driver.exec(ctor, 'select 1 as A'))
@@ -43,6 +37,7 @@ describe('Mysql', function () {
       .to.be.eventually.rejectedWith(UnconnectedDatabaseError)
   })
   it('should create table and drop it.', async () => {
+    const User = createModel('user', { id: dp('int') })
     const [driver, ctor] = await connectDriver()
     await driver.create(User, ctor)
     expect(
@@ -54,6 +49,11 @@ describe('Mysql', function () {
     ).to.be.lengthOf(0)
   })
   describe('CRUD', function () {
+    const User = createModel('user', {
+      id: dp('int').primary.autoinc,
+      name: dp('string').notnull.unique,
+      age: dp('int').notnull
+    })
     let [driver, ctor]: Awaited<ReturnType<typeof connectDriver>> | [null, null] = [null, null]
     before(async () => {
       [driver, ctor] = await connectDriver()
@@ -151,10 +151,21 @@ describe('Mysql', function () {
     })
   })
   describe('Static', function () {
+    const User = createModel('user', {
+      id: dp('int').primary.autoinc,
+      name: dp('string').notnull.unique,
+      age: dp('int').notnull,
+      ctime: dp('datetime')
+    })
     it('should generate create table sql.', () => {
       expect(MysqlDriver.resolveSchema(User.name, User.schema))
         .to.be.eq(
-          'create table `user` (`id` int auto_increment, constraint user_pk primary key (id), `name` varchar(255) not null unique, `age` int not null);'
+          'create table `user` ('
+          +   '`id` int auto_increment, constraint user_pk primary key (id), '
+          +   '`name` varchar(255) not null unique, '
+          +   '`age` int not null, '
+          +   '`ctime` datetime'
+          + ');'
         )
       const Temp00 = createModel('temp', {
         foo: dp('int').primary,
@@ -191,17 +202,17 @@ describe('Mysql', function () {
         new User({ id: 2, name: 'foo', age: 10 })
       ])
       expect(sql)
-        .to.be.eq('insert into `user` (`id`, `name`, `age`) values (?, ?, ?), (?, ?, ?);')
+        .to.be.eq('insert into `user` (`id`, `name`, `age`, `ctime`) values (?, ?, ?, ?), (?, ?, ?, ?);')
       expect(values)
-        .to.be.deep.eq([ 1, 'foo', 10, 2, 'foo', 10 ])
+        .to.be.deep.eq([ 1, 'foo', 10, undefined, 2, 'foo', 10, undefined ])
       ;[ sql, values ] = MysqlDriver.resolveEntities([
         new User({ name: 'foo', age: 10 }),
         new User({ name: 'foo', age: 10 })
       ])
       expect(sql)
-        .to.be.eq('insert into `user` (`id`, `name`, `age`) values (?, ?, ?), (?, ?, ?);')
+        .to.be.eq('insert into `user` (`id`, `name`, `age`, `ctime`) values (?, ?, ?, ?), (?, ?, ?, ?);')
       expect(values)
-        .to.be.deep.eq([ undefined, 'foo', 10, undefined, 'foo', 10 ])
+        .to.be.deep.eq([ undefined, 'foo', 10, undefined, undefined, 'foo', 10, undefined ])
     })
     it('should resolve query.', () => {
       let [ sql, values ]: [string, any[]] = MysqlDriver.resolveQuery<[typeof User]>({
