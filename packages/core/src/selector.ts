@@ -5,6 +5,7 @@ import { U2I } from './types'
 export type Query<S extends Model.Schema | unknown> = {
   $or?: Query<S>[]
   $and?: Query<S>[]
+  $not?: Query<S>
 } & {
   [K in keyof S]?: S[K] extends Pick<Model.PropDesc<Model.Prop>, '$content'>
     ? Model.GetPropType<S[K]> extends infer T
@@ -19,8 +20,8 @@ export namespace Query {
     $not?: Prop<T, VT>
   } & (
     T extends Model.Types.String | Model.Types.Number | Model.Types.Date ? {
-      $eq?: VT
-      $ne?: VT
+      $eq?: VT | null
+      $ne?: VT | null
       $gt?: VT
       $lt?: VT
       $gte?: VT
