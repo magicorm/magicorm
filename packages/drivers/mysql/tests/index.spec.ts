@@ -28,7 +28,8 @@ describe('Mysql', function () {
   const User = createModel('user', {
     id: dp('int').primary.autoinc,
     name: dp('string').notnull.unique,
-    age: dp('int').notnull
+    age: dp('int').notnull,
+    ctime: dp('date')
   })
   it('should connect.', async () => {
     const [driver, ctor] = await connectDriver()
@@ -201,6 +202,80 @@ describe('Mysql', function () {
         .to.be.eq('insert into `user` (`id`, `name`, `age`) values (?, ?, ?), (?, ?, ?);')
       expect(values)
         .to.be.deep.eq([ undefined, 'foo', 10, undefined, 'foo', 10 ])
+    })
+    it('should resolve query.', () => {
+      let [ sql, values ]: [string, any[]] = MysqlDriver.resolveQuery<[typeof User]>({
+        name: 'user',
+        age: { $eq: null },
+        ctime: {}
+      })
+      expect(sql)
+        .to.be.eq('`name` = ? and `age` is ?')
+      expect(values)
+        .to.be.deep.eq([ 'user' ])
+
+      ;[ sql, values ] = MysqlDriver.resolveQuery<[typeof User]>({
+        name: 'user',
+        age: 8
+      })
+      expect(sql)
+        .to.be.eq('`name` = ? and `age` = ?')
+      expect(values)
+        .to.be.deep.eq([ 'user', 8 ])
+
+      ;[ sql, values ] = MysqlDriver.resolveQuery<[typeof User]>({
+        name: {
+          $regex: /^foo/,
+          $like: '%bar%'
+        }
+      })
+      expect(sql)
+        .to.be.eq('(`name` regexp ? and `name` like ?)')
+      expect(values)
+        .to.be.deep.eq([ '^foo', '%bar%' ])
+
+      ;[ sql, values ] = MysqlDriver.resolveQuery<[typeof User]>({
+        $and: [{
+          name: 'user'
+        }, {
+          age: 10
+        }]
+      })
+      expect(sql)
+        .to.be.eq('(`name` = ? and `age` = ?)')
+      expect(values)
+        .to.be.deep.eq([ 'user', 10 ])
+
+      ;[ sql, values ] = MysqlDriver.resolveQuery<[typeof User]>({
+        name: 'user',
+        $or: [{
+          name: { $regex: /^foo/ }
+        }, {
+          age: { $gt: 10 }
+        }]
+      })
+      expect(sql)
+        .to.be.eq('`name` = ? and (`name` regexp ? or `age` > ?)')
+      expect(values)
+        .to.be.deep.eq([ 'user', '^foo', 10 ])
+
+      ;[ sql, values ] = MysqlDriver.resolveQuery<[typeof User]>({
+        $not: { name: 'user' }
+      })
+      expect(sql)
+        .to.be.eq('!(`name` = ?)')
+      expect(values)
+        .to.be.deep.eq([ 'user' ])
+
+      ;[ sql, values ] = MysqlDriver.resolveQuery<[typeof User]>({
+        name: {
+          $not: { $like: '%foo' }
+        }
+      })
+      expect(sql)
+        .to.be.eq('`name` not like ?')
+      expect(values)
+        .to.be.deep.eq([ '%foo' ])
     })
   })
 })

@@ -196,6 +196,103 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
     }
   }
 
+  static resolveQueryProp(key: string, val: any, options = {
+    not: false
+  }): [string, any[]] {
+    const type = typeof val
+    if (['string', 'number'].includes(type))
+      return this.resolveQueryProp(key, { $eq: val })
+    if (val === null)
+      return this.resolveQueryProp(key, { $eq: null })
+    if (val instanceof RegExp)
+      return this.resolveQueryProp(key, { $regex: val.source })
+    const wheres: string[] = []
+    const values: any[] = []
+    if (type === 'object') {
+      const opts = {
+        $eq: '=',
+        $ne: '!=',
+        $gt: '>',
+        $gte: '>=',
+        $lt: '<',
+        $lte: '<=',
+        $regex: 'regexp',
+        $like: 'like'
+      }
+      Object.entries(opts)
+        .filter(([propKey]) => val[propKey] !== undefined)
+        .forEach(([porpKey, opt]) => {
+          const prop = val[porpKey]
+          const propType = typeof prop
+          // resolve operator
+          if (prop === null) {
+            if (porpKey === '$eq') {
+              opt = 'is'
+            } else if (porpKey === '$ne') {
+              opt = 'is not'
+            }
+          }
+          // resolve value
+          if (['string', 'number'].includes(propType)) {
+            values.push(prop)
+          } else if (prop instanceof Date) {
+            values.push(prop.toISOString())
+          } else if (prop instanceof RegExp) {
+            values.push(prop.source)
+          }
+          wheres.push(`\`${ key }\`${ options.not ? ' not' : '' } ${ opt } ?`)
+        })
+      if (val['$not']) {
+        return this.resolveQueryProp(key, val['$not'], { not: true })
+      }
+      return [
+        ['', wheres[0]][wheres.length] ?? `(${ wheres.join(' and ') })`,
+        values
+      ]
+    }
+    throw new Error(`Unsupported query property type: ${ type }`)
+  }
+
+  static resolveQuery<Models extends Model[]>(query: Engine.Models2Query<Models>) {
+    const values: any[] = []
+    const where: string = Object.entries(query).reduce((acc, [key, val]) => {
+      if (val === undefined)
+        return acc
+
+      if (['$and', '$or'].includes(key)) {
+        if (!Array.isArray(val)) {
+          throw new Error(`'${ key }' must be an array`)
+        }
+
+        const wheres: string[] = []
+        val.forEach(v => {
+          const [ _w, _values ] = MysqlDriver.resolveQuery(v)
+          values.push(..._values)
+          wheres.push(_w)
+        })
+        return acc.concat([`(${ wheres.join({
+          $and: ' and ',
+          $or: ' or '
+        }[key]) })`])
+      }
+      if (key === '$not') {
+        if (val === undefined)
+          return acc
+        const [ _w, _values ] = MysqlDriver.resolveQuery(val as any)
+        values.push(..._values)
+        return acc.concat([`!(${ _w })`])
+      }
+      const [_w, _values] = MysqlDriver.resolveQueryProp(key, val)
+      if (_w.length > 0) {
+        values.push(..._values)
+        return acc.concat([_w])
+      } else {
+        return acc
+      }
+    }, [] as string[]).join(' and ')
+    return [where, values] as [string, any[]]
+  }
+
   delete<
     Models extends Model[]
   >(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
