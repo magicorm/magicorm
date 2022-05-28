@@ -37,7 +37,7 @@ export interface Driver<
     models: Models, query: Engine.Models2Query<Models>,
     conn: Connector,
     opts?: Driver.OperateOptions
-  ) => void | Promise<void>
+  ) => number | Promise<number>
   /**
    * Search results by query
    */
