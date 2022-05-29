@@ -37,6 +37,12 @@ export interface EntityConstructor<M extends Model, D = Model.InferSchemaData<M[
   new(data: D): Entity<M> & D
 }
 
+export const createEntity = (model: Model, data: any) => {
+  const entity: Record<string | symbol, any> = {}
+  entity[EntityModelSymbol] = model
+  return Object.assign(entity, data)
+}
+
 export const modelsCache: EntityConstructor<Model>[] = []
 
 export const createModel = <
@@ -52,9 +58,7 @@ export const createModel = <
       return target[p]
     },
     construct(target, [data]) {
-      const entity: Record<string | symbol, any> = {}
-      entity[EntityModelSymbol] = target
-      return Object.assign(entity, data)
+      return createEntity(target, data)
     }
   })
   if (engine) {
