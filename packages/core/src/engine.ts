@@ -125,6 +125,7 @@ export class Engine<DriverName extends Engine.Drivers> {
 
   registerModel(model: Model<this>) {
     this.models.push(model)
+    model.engine = this
   }
 
   async connect() {
