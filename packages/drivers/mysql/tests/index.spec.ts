@@ -1,6 +1,6 @@
 import { expect, use } from 'chai'
 import cap from 'chai-as-promised'
-import { createModel, dp, UnconnectedDatabaseError } from '@magicorm/core'
+import { createModel, dp, EntityModelSymbol, UnconnectedDatabaseError } from '@magicorm/core'
 import MysqlDriver from '@magicorm/driver-mysql'
 
 use(cap)
@@ -55,11 +55,11 @@ describe('Mysql', function () {
       age: dp('int').notnull
     })
     let [driver, ctor]: Awaited<ReturnType<typeof connectDriver>> | [null, null] = [null, null]
-    before(async () => {
+    beforeEach(async () => {
       [driver, ctor] = await connectDriver()
       await driver.create(User, ctor)
     })
-    after(async () => {
+    afterEach(async () => {
       if (!driver || !ctor)
         return
 
@@ -164,6 +164,85 @@ describe('Mysql', function () {
         await driver.delete([User], { id: { $gte: 2 } }, ctor)
         // 5,7,8,100,101,102
       ).to.be.deep.equal(6)
+    })
+    it('should update entity.', async () => {
+      if (!driver || !ctor)
+        throw new Error('before test failed.')
+
+      await driver.insert([
+        new User({ name: 'a', age: 1 })
+      ], ctor)
+    })
+    it('should search target model entity.', async () => {
+      if (!driver || !ctor)
+        throw new Error('before test failed.')
+
+      await driver.insert([
+        new User({ name: 'foo', age: 1 }),
+        new User({ name: 'bar', age: 1 }),
+        new User({ name: 'fuu', age: 1 }),
+        new User({ name: 'ber', age: 1 })
+      ], ctor)
+
+      expect(
+        await driver.search(ctor, {}, User.schema)
+          .where({
+            name: 'foo'
+          })
+      ).to.be.deep.equal([{
+        id: 1,
+        name: 'foo',
+        age: 1,
+        [EntityModelSymbol]: User
+      }])
+      expect(
+        await driver.search(ctor, {}, User.schema)
+          .where({
+            name: { $like: 'f%' }
+          })
+      ).to.be.deep.equal([{
+        id: 1,
+        name: 'foo',
+        age: 1,
+        [EntityModelSymbol]: User
+      }, {
+        id: 3,
+        name: 'fuu',
+        age: 1,
+        [EntityModelSymbol]: User
+      }])
+      expect(
+        await driver.search(ctor, {}, User.schema)
+          .where({
+            name: { $like: 'f%' }
+          })
+          .limit(1)
+      ).to.be.deep.equal([{
+        id: 1,
+        name: 'foo',
+        age: 1,
+        [EntityModelSymbol]: User
+      }])
+      expect(
+        await driver.search(ctor, {}, User.schema)
+          .where({
+            name: { $like: 'f%' }
+          })
+          .offset(1)
+      ).to.be.deep.equal([{
+        id: 3,
+        name: 'fuu',
+        age: 1,
+        [EntityModelSymbol]: User
+      }])
+      expect(
+        await driver.search(ctor, {}, User.schema)
+          .where({
+            name: { $like: 'f%' }
+          })
+          .limit(0)
+          .offset(1)
+      ).to.be.deep.equal([])
     })
   })
   describe('Static', function () {

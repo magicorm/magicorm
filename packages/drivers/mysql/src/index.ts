@@ -1,11 +1,11 @@
 import { Connection, ConnectionConfig } from 'mysql'
 import {
   AbsConnector,
-  AbsDriver,
+  AbsDriver, createEntity,
   Driver, DuplicatedDatabaseError,
   Engine,
   Entity, EntityModelSymbol,
-  Model,
+  Model, OriginModelSymbol,
   Selector,
   UnconnectedDatabaseError, UnknownDatabaseError
 } from '@magicorm/core'
@@ -65,17 +65,20 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
     super('mysql', options)
   }
 
-  exec(conn: Connector, sql: string, values?: any[]) {
+  exec<T extends 'ok' | 'row-data' = 'ok'>(conn: Connector, sql: string, values?: any[]) {
     return new Promise<{
-      fieldCount: number
-      affectedRows: number
-      insertId: number
-      serverStatus: number
-      warningCount: number,
-      message: string
-      protocol41: boolean
-      changedRows: number
-    }>((resolve, reject) => {
+      ok: {
+        fieldCount: number
+        affectedRows: number
+        insertId: number
+        serverStatus: number
+        warningCount: number,
+        message: string
+        protocol41: boolean
+        changedRows: number
+      }
+      'row-data': any[]
+    }[T]>((resolve, reject) => {
       conn.inner.query(sql, values, (err, results) => {
         if (err) {
           if (err.message === 'Cannot enqueue Query after invoking quit.') {
@@ -311,8 +314,51 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
 
   search<
     Schemas extends readonly Model.Schema[]
-  >(conn: Connector, opts?: Driver.OperateOptions, ...properties: Schemas) {
-    return new Selector(async () => [], ...properties)
+  >(conn: Connector, opts?: Driver.OperateOptions & {
+    offsetLimit?: number
+  }, ...properties: Schemas) {
+    return new Selector(async sel => {
+      const [where, values] = MysqlDriver.resolveQuery(
+        sel.queries.length <= 1
+          ? sel.queries[0]
+          : { $and: sel.queries }
+      )
+      const tableSet = new Set<Model>()
+      properties.forEach(schemaProps => {
+        Object.entries(schemaProps).forEach(([_, value]) => {
+          const table = value.$content[OriginModelSymbol]
+          if (table)
+            tableSet.add(table)
+        })
+      })
+      const tables = [...tableSet]
+
+      if (tables.length === 0)
+        throw new Error('No table found')
+
+      let sql = `select * from ${ tables.map(t => t.name).join(', ') }`
+      if (where.length > 0) {
+        sql += ` where ${ where }`
+      }
+      if (sel.options.limit !== undefined)
+        sql += ` limit ${ sel.options.limit }`
+      if (sel.options.offset !== undefined) {
+        sql += `${
+          sel.options.limit !== undefined
+            ? ''
+            : ` limit ${opts?.offsetLimit ?? 281_474_976_710_655}`
+        } offset ${sel.options.offset}`
+      }
+
+      sql += ';'
+      const rows = await this.exec<'row-data'>(conn, sql, values)
+      if (tables.length === 1) {
+        const [ t ] = tables
+        return rows.map(row => createEntity(t, row))
+      } else {
+      }
+      return []
+    }, ...properties)
   }
 }
 
