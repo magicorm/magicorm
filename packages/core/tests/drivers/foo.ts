@@ -5,7 +5,6 @@ import {
   Entity,
   EntityModelSymbol,
   Model,
-  OriginModelSymbol,
   Selector
 } from '@magicorm/core'
 
@@ -51,7 +50,7 @@ class FooDriver extends AbsDriver<'foo'> implements Driver<'foo', Connector> {
   create(m: Model, conn: Connector) {
     conn.db[m.name] = []
   }
-  insert(entities: Entity<Model>[], conn: Connector) {
+  insert<M extends Model>(entities: Entity<M>[], conn: Connector) {
     if (entities.length > 0) {
       const m = entities[0][EntityModelSymbol]
       conn.db[m.name].push(...entities)
@@ -76,6 +75,7 @@ class FooDriver extends AbsDriver<'foo'> implements Driver<'foo', Connector> {
   }
 
   delete<Models extends Model[]>(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
+    return 0
   }
 
   update<Models extends Model[]>(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
