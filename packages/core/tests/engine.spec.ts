@@ -46,6 +46,11 @@ describe('Engine', () => {
   after(() => {
     MockRequire.stop('@magicorm/driver-foo')
   })
+  afterEach(() => {
+    while (engines.length) {
+      engines.pop()
+    }
+  })
 
   it('should create Engine.', () => {
     const engine = createEngine({
@@ -60,10 +65,12 @@ describe('Engine', () => {
       .to.be.equal(engine)
   })
   it('should create call `Driver` create method when engine connect.', async () => {
-   const User = createModel('user', {
+    const User = createModel('user', {
       id: dp('number').primary.unique.autoinc,
       username: dp('string').unique
     })
+    expect(modelsCache.length)
+      .to.be.equal(1)
     const engine = createEngine({
       driver: 'foo',
       driverOptions: { dbName: 'bar' }
