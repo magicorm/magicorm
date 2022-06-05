@@ -27,7 +27,9 @@ export const OriginModelSymbol = Symbol('OriginModel')
 
 export type Entity<M extends Model> = {
   [EntityModelSymbol]: M
-} &{
+} & EntityProperties<M>
+
+export type EntityProperties<M extends Model> = {
   [k in keyof Model.InferSchemaData<M['schema']>]: any
 }
 

@@ -49,11 +49,12 @@ export interface Driver<
   /**
    * Update data for model
    */
-  update: <Models extends Model[]>(
-    models: Models, query: Engine.Models2Query<Models>,
+  update: <M extends Model>(
     conn: Connector,
+    model: M,
+    entities: Entity<M>, query: Engine.Models2Query<[M]>,
     opts?: Driver.OperateOptions
-  ) => void | Promise<void>
+  ) => number | Promise<number>
   /**
    * Update or Insert data to model
    */
