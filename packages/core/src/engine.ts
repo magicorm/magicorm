@@ -59,10 +59,10 @@ export interface Driver<
    * Update or Insert data to model
    */
   upsert: <Models extends Model[]>(
-    models: Models, query: Engine.Models2Query<Models>,
+    entities: Entity<Models[number]>[],
     conn: Connector,
     opts?: Driver.OperateOptions
-  ) => void | Promise<void>
+  ) => Entity<Models[number]>[] | Promise<Entity<Models[number]>[]>
 }
 
 export abstract class AbsDriver<Name extends Engine.Drivers> {
