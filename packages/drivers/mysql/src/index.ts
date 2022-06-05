@@ -4,7 +4,7 @@ import {
   AbsDriver, createEntity,
   Driver, DuplicatedDatabaseError,
   Engine,
-  Entity, EntityModelSymbol,
+  Entity, EntityModelSymbol, EntityProperties,
   Model, OriginModelSymbol,
   Selector,
   UnconnectedDatabaseError, UnknownDatabaseError
@@ -306,7 +306,23 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
     return affectedRows
   }
 
-  update<Models extends Model[]>(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
+  async update<M extends Model>(
+    conn: Connector,
+    model: M,
+    entity: EntityProperties<M>,
+    query?: Engine.Models2Query<[M]>,
+    opts?: Driver.OperateOptions
+  ) {
+    const values = [entity] as any[]
+    let sql = `update ${ model.name } set ?`
+    if (query) {
+      const [where, _values] = MysqlDriver.resolveQuery(query)
+      values.push(..._values)
+      sql += ` where ${where}`
+    }
+    return (
+      await this.exec(conn, sql, values)
+    ).changedRows
   }
 
   upsert<Models extends Model[]>(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {

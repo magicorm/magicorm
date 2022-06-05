@@ -169,9 +169,19 @@ describe('Mysql', function () {
       if (!driver || !ctor)
         throw new Error('before test failed.')
 
-      await driver.insert([
-        new User({ name: 'a', age: 1 })
-      ], ctor)
+      const users = [
+        new User({ name: 'foo', age: 15 }),
+        new User({ name: 'fuu', age: 11 }),
+        new User({ name: 'bar', age: 21 }),
+        new User({ name: 'ber', age: 12 })
+      ]
+      await driver.insert(users, ctor)
+      expect(
+        await driver.update(ctor, User, { age: 1 })
+      ).to.be.deep.equal(users.length)
+      expect(
+        await driver.update(ctor, User, { age: 5 }, { name: { $like: 'f%' } })
+      ).to.be.deep.equal(2)
     })
     it('should search target model entity.', async () => {
       if (!driver || !ctor)
