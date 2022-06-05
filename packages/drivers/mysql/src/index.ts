@@ -150,27 +150,42 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
     return this.exec(conn, MysqlDriver.resolveSchema(m.name, m.schema))
   }
 
-  static resolveEntities<M extends Model>(entities: Entity<M>[]) {
+  static resolveEntities<M extends Model>(
+    entities: Entity<M>[],
+    opts?: {
+      updateOnDuplicate?: boolean
+    }
+  ) {
     const m = entities[0][EntityModelSymbol]
-    const keys = Object.keys(m.schema) as (keyof Entity<M>)[]
+    const keys = Object.keys(m.schema) as EntityProperties<M>[]
     return [
       `insert into \`${ m.name }\` (${
         keys.map(key => `\`${ key as string }\``).join(', ')
       }) values (${
         entities.map(() => keys.map(() => '?').join(', ')).join('), (')
-      });`,
+      })${
+        opts?.updateOnDuplicate
+          ? ` on duplicate key update ${
+            keys.map(key => `\`${ key }\` = VALUES(\`${ key }\`)`).join(', ')
+          };`
+          : ''
+      };`,
       entities.reduce(
+        // @ts-ignore
         (acc, e) => acc.concat(keys.map(k => e[k])),
         [] as any[]
       )
     ] as const
   }
 
-  async insert<M extends Model>(entities: Entity<M>[], conn: Connector) {
+  async insert<M extends Model>(
+    entities: Entity<M>[], conn: Connector,
+    opts?: { updateOnDuplicate?: boolean }
+  ) {
     if (entities.length === 0)
       return []
 
-    const [sql, values] = MysqlDriver.resolveEntities(entities)
+    const [ sql, values ] = MysqlDriver.resolveEntities(entities, opts)
     try {
       const okPk = await this.exec(conn, sql, values)
       let id = okPk.insertId
@@ -298,7 +313,7 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
 
   async delete<
     Models extends Model[]
-  >(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
+  >(models: Models, query: Engine.Models2Query<Models>, conn: Connector) {
     const [where, values] = MysqlDriver.resolveQuery(query)
     const tables = models.map(m => `\`${ m.name }\``).join(', ')
     const sql = `delete from ${ tables } where ${ where }`
@@ -310,8 +325,7 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
     conn: Connector,
     model: M,
     entity: EntityProperties<M>,
-    query?: Engine.Models2Query<[M]>,
-    opts?: Driver.OperateOptions
+    query?: Engine.Models2Query<[M]>
   ) {
     const values = [entity] as any[]
     let sql = `update ${ model.name } set ?`
@@ -325,7 +339,12 @@ class MysqlDriver extends AbsDriver<'mysql'> implements Driver<'mysql', Connecto
     ).changedRows
   }
 
-  upsert<Models extends Model[]>(models: Models, query: Engine.Models2Query<Models>, conn: Connector, opts?: Driver.OperateOptions) {
+  async upsert<M extends Model>(
+    entities: Entity<M>[], conn: Connector
+  ) {
+    return this.insert(entities, conn, {
+      updateOnDuplicate: true
+    })
   }
 
   search<

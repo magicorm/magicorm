@@ -165,6 +165,34 @@ describe('Mysql', function () {
         // 5,7,8,100,101,102
       ).to.be.deep.equal(6)
     })
+    it('should create or update entity when it exsist', async () => {
+      if (!driver || !ctor)
+        throw new Error('before test failed.')
+
+      expect(
+        await driver.insert([
+          new User({ name: 'a', age: 1 }),
+          new User({ name: 'b', age: 1 })
+        ], ctor)
+      ).to.be.deep.equal([
+        { id: 1, name: 'a', age: 1 },
+        { id: 2, name: 'b', age: 1 }
+      ])
+      expect(
+        await driver.upsert([
+          new User({ id: 1, name: 'a0', age: 2 })
+        ], ctor)
+      ).to.be.deep.equal([
+        { id: 1, name: 'a0', age: 2 }
+      ])
+      expect(
+        await driver.insert([
+          new User({ name: 'c', age: 1 })
+        ], ctor)
+      ).to.be.deep.equal([
+        { id: 3, name: 'c', age: 1 }
+      ])
+    })
     it('should update entity.', async () => {
       if (!driver || !ctor)
         throw new Error('before test failed.')
